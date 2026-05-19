@@ -18,6 +18,7 @@
          예: https://yourusername.github.io
          ================================================================ -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         emailjs.init("c_Uqcwp1ZESf-c7hC");
     </script>
@@ -327,6 +328,7 @@
                             <span class="h-2 w-2 rounded-full bg-amber-800"></span> Live Store Management
                         </div>
                         <h2 class="text-3xl font-black text-stone-900 mt-1">BANCHAN Admin Channel</h2>
+                        <p id="cloud-sync-badge" class="hidden text-[10px] font-bold mt-1 flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-emerald-500"></span><span id="cloud-sync-badge-text">Cloud sync active</span></p>
                     </div>
                     <button onclick="handleAdminLogout()" class="px-5 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs rounded-xl transition-all border border-stone-200">
                         <i class="fa-solid fa-arrow-right-from-bracket mr-1 rtl:ml-1"></i> Lock Portal
@@ -497,6 +499,11 @@
         </section>
     </main>
 
+    <div id="cloud-sync-banner" class="hidden fixed bottom-20 start-4 end-4 sm:start-auto sm:end-6 sm:max-w-md z-40 bg-amber-950 text-amber-50 text-xs font-semibold px-4 py-3 rounded-xl shadow-lg border border-amber-800">
+        <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>
+        <span id="cloud-sync-banner-text">Set Supabase URL &amp; key in CONFIG for cross-device sync.</span>
+    </div>
+
     <!-- CART SIDEBAR -->
     <div id="cart-sidebar" class="fixed inset-0 z-50 pointer-events-none hidden">
         <div class="absolute inset-0 bg-stone-950/40 backdrop-blur-xs pointer-events-auto" onclick="toggleCart()"></div>
@@ -643,10 +650,23 @@ const ADMIN_CREDENTIALS = [
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 30000; // 30초
 
-// localStorage 키 (주문·메뉴는 탭/창 간 공유)
+// 4. Supabase 클라우드 동기화 (모든 브라우저·기기 공유) — supabase.com 프로젝트 설정 후 입력
+//    SQL: BANCHAN-supabase-sync.sql 파일을 Supabase SQL Editor에서 실행
+const SUPABASE_URL = 'https://vixodfppiujmvkobarsz.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_q1V6exXc7Ej5Ifjsfzpetw_elhEPtNy';
+const SUPABASE_STORAGE_BUCKET = 'menu-images';
+const CLOUD_POLL_INTERVAL_MS = 8000;
+
+// localStorage 키 (오프라인 캐시 + 같은 브라우저 탭 간 공유)
 const ORDERS_STORAGE_KEY = 'banchan_orders_jerusalem';
 const MENU_STORAGE_KEY = 'banchan_menu';
 const SPOTS_STORAGE_KEY = 'banchan_spots';
+const SYNC_KEYS = { MENU: 'menu', ORDERS: 'orders', SPOTS: 'spots' };
+
+let supabaseClient = null;
+let cloudSyncTimestamps = { menu: 0, orders: 0, spots: 0 };
+let cloudPollTimer = null;
+let cloudSaveInProgress = false;
 
 // ================================================================
 // 데이터 & 상태
@@ -831,6 +851,196 @@ async function saveOrderToSheets(order) {
 }
 
 // ================================================================
+// Supabase 클라우드 동기화 (브라우저·기기 간 통일)
+// ================================================================
+function isCloudSyncEnabled() {
+    return !!(SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes('YOUR_') && typeof supabase !== 'undefined');
+}
+
+function getSupabaseClient() {
+    if (!isCloudSyncEnabled()) return null;
+    if (!supabaseClient) supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    return supabaseClient;
+}
+
+function updateCloudSyncBadge(active, text) {
+    const badge = document.getElementById('cloud-sync-badge');
+    const badgeText = document.getElementById('cloud-sync-badge-text');
+    const banner = document.getElementById('cloud-sync-banner');
+    if (badge) {
+        if (active) { badge.classList.remove('hidden'); if (badgeText) badgeText.textContent = text || 'Cloud sync active — all devices'; }
+        else badge.classList.add('hidden');
+    }
+    if (banner) {
+        if (active) banner.classList.add('hidden');
+        else { banner.classList.remove('hidden'); const bt = document.getElementById('cloud-sync-banner-text'); if (bt) bt.textContent = text || 'Supabase를 설정하면 Chrome·Safari·휴대폰에서 데이터가 동기화됩니다.'; }
+    }
+}
+
+function refreshUIAfterCloudSync() {
+    syncCartWithMenu();
+    renderCategoryTabs();
+    renderMenu();
+    renderFooterLocations();
+    populateLocationSelect();
+    updateCartUI();
+    if (state.currentTab === 'my-orders') renderMyOrders();
+    else if (state.currentTab === 'checkout') renderCheckoutSummary();
+    else if (state.currentTab === 'admin' && state.isAdminAuthenticated) {
+        if (state.currentAdminTab === 'menu') renderAdminMenuList();
+        else if (state.currentAdminTab === 'spots') renderAdminSpotsList();
+        else if (state.currentAdminTab === 'orders') renderAdminOrdersLog();
+        else if (state.currentAdminTab === 'analytics') renderAdminAnalytics();
+    }
+}
+
+function applyCloudData(key, data, fromRemote) {
+    if (!data) return false;
+    if (key === SYNC_KEYS.MENU && Array.isArray(data)) {
+        state.menuItems = data.map(mergeMenuWithDefaults);
+        localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(state.menuItems));
+        return true;
+    }
+    if (key === SYNC_KEYS.ORDERS && Array.isArray(data)) {
+        state.orders = data;
+        localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(state.orders));
+        return true;
+    }
+    if (key === SYNC_KEYS.SPOTS && Array.isArray(data)) {
+        state.pickupSpots = data;
+        localStorage.setItem(SPOTS_STORAGE_KEY, JSON.stringify(state.pickupSpots));
+        return true;
+    }
+    return false;
+}
+
+async function cloudUpsert(key, payload) {
+    const sb = getSupabaseClient();
+    if (!sb) return false;
+    const { data, error } = await sb.from('banchan_sync').upsert({ key, data: payload }, { onConflict: 'key' }).select('updated_at').single();
+    if (error) throw error;
+    if (data && data.updated_at) cloudSyncTimestamps[key] = new Date(data.updated_at).getTime();
+    return true;
+}
+
+async function uploadMenuImageIfNeeded(itemId, imageSrc) {
+    if (!imageSrc || !String(imageSrc).startsWith('data:')) return imageSrc;
+    const sb = getSupabaseClient();
+    if (!sb) return imageSrc;
+    try {
+        const res = await fetch(imageSrc);
+        const blob = await res.blob();
+        const ext = (blob.type && blob.type.includes('png')) ? 'png' : 'jpg';
+        const path = 'menu/' + itemId + '-' + Date.now() + '.' + ext;
+        const { error: upErr } = await sb.storage.from(SUPABASE_STORAGE_BUCKET).upload(path, blob, { upsert: true, contentType: blob.type || 'image/jpeg' });
+        if (upErr) { console.warn('Image upload:', upErr.message); return imageSrc; }
+        const { data: urlData } = sb.storage.from(SUPABASE_STORAGE_BUCKET).getPublicUrl(path);
+        return urlData.publicUrl;
+    } catch (e) {
+        console.warn('Image upload failed', e);
+        return imageSrc;
+    }
+}
+
+async function prepareMenuForCloud(menuItems) {
+    const out = [];
+    for (const item of menuItems) {
+        const copy = JSON.parse(JSON.stringify(item));
+        if (copy.image && String(copy.image).startsWith('data:')) {
+            copy.image = await uploadMenuImageIfNeeded(copy.id, copy.image);
+        }
+        out.push(normalizeMenuItem(copy, DEFAULT_MENU_ITEMS.find(d => d.id === copy.id)));
+    }
+    return out;
+}
+
+async function cloudPushMenu() {
+    if (!isCloudSyncEnabled() || cloudSaveInProgress) return;
+    cloudSaveInProgress = true;
+    try {
+        const prepared = await prepareMenuForCloud(state.menuItems);
+        state.menuItems = prepared;
+        localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(state.menuItems));
+        await cloudUpsert(SYNC_KEYS.MENU, prepared);
+    } finally { cloudSaveInProgress = false; }
+}
+
+async function cloudPushOrders() {
+    if (!isCloudSyncEnabled()) return;
+    await cloudUpsert(SYNC_KEYS.ORDERS, state.orders);
+}
+
+async function cloudPushSpots() {
+    if (!isCloudSyncEnabled()) return;
+    await cloudUpsert(SYNC_KEYS.SPOTS, state.pickupSpots);
+}
+
+async function pullFromCloud(force) {
+    const sb = getSupabaseClient();
+    if (!sb) return false;
+    try {
+        const { data, error } = await sb.from('banchan_sync').select('key, data, updated_at');
+        if (error) throw error;
+        let changed = false;
+        (data || []).forEach(row => {
+            const ts = new Date(row.updated_at).getTime();
+            if (!force && ts <= (cloudSyncTimestamps[row.key] || 0)) return;
+            cloudSyncTimestamps[row.key] = ts;
+            if (applyCloudData(row.key, row.data, true)) changed = true;
+        });
+        if (changed) refreshUIAfterCloudSync();
+        return true;
+    } catch (e) {
+        console.error('Cloud pull failed:', e);
+        return false;
+    }
+}
+
+async function seedCloudIfEmpty() {
+    const sb = getSupabaseClient();
+    if (!sb) return;
+    const { data } = await sb.from('banchan_sync').select('key');
+    const keys = (data || []).map(r => r.key);
+    if (!keys.includes(SYNC_KEYS.MENU)) await cloudUpsert(SYNC_KEYS.MENU, state.menuItems);
+    if (!keys.includes(SYNC_KEYS.ORDERS)) await cloudUpsert(SYNC_KEYS.ORDERS, state.orders);
+    if (!keys.includes(SYNC_KEYS.SPOTS)) await cloudUpsert(SYNC_KEYS.SPOTS, state.pickupSpots);
+}
+
+function startCloudPolling() {
+    if (cloudPollTimer) clearInterval(cloudPollTimer);
+    cloudPollTimer = setInterval(function() { pullFromCloud(false); }, CLOUD_POLL_INTERVAL_MS);
+}
+
+function setupSupabaseRealtime() {
+    const sb = getSupabaseClient();
+    if (!sb || !sb.channel) return;
+    sb.channel('banchan-public-sync')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'banchan_sync' }, function(payload) {
+            const row = payload.new;
+            if (!row || !row.key) return;
+            const ts = new Date(row.updated_at).getTime();
+            if (ts <= (cloudSyncTimestamps[row.key] || 0)) return;
+            cloudSyncTimestamps[row.key] = ts;
+            if (applyCloudData(row.key, row.data, true)) refreshUIAfterCloudSync();
+        })
+        .subscribe();
+}
+
+async function initCloudSync() {
+    if (!isCloudSyncEnabled()) {
+        updateCloudSyncBadge(false);
+        return;
+    }
+    updateCloudSyncBadge(true, 'Cloud sync active — all devices');
+    const ok = await pullFromCloud(true);
+    if (ok) {
+        await seedCloudIfEmpty();
+        startCloudPolling();
+        setupSupabaseRealtime();
+    }
+}
+
+// ================================================================
 // 저장소 헬퍼 (메뉴·주문·픽업 영속화 + 탭 간 동기화)
 // ================================================================
 function normalizeMenuItem(item, def) {
@@ -869,6 +1079,8 @@ function loadMenuItems() {
 
 function saveMenuItems() {
     localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(state.menuItems));
+    if (isCloudSyncEnabled()) cloudPushMenu().then(function() { renderMenu(); renderAdminMenuList(); }).catch(function(e) { console.error('Cloud menu save', e); showToast('Cloud Sync', 'Menu saved locally; cloud upload failed.', true); });
+    return true;
 }
 
 function syncCartWithMenu() {
@@ -893,6 +1105,7 @@ function loadOrders() {
 function saveOrders() {
     try {
         localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(state.orders));
+        if (isCloudSyncEnabled()) cloudPushOrders().catch(function(e) { console.error('Cloud orders save', e); });
         return true;
     } catch (err) {
         console.error('Failed to save orders:', err);
@@ -1009,7 +1222,7 @@ function setupStorageSync() {
 // ================================================================
 // INIT
 // ================================================================
-window.onload = function() {
+window.onload = async function() {
     loadMenuItems();
     syncCartWithMenu();
     state.pickupSpots = JSON.parse(localStorage.getItem(SPOTS_STORAGE_KEY)) || DEFAULT_PICKUP_SPOTS;
@@ -1021,6 +1234,8 @@ window.onload = function() {
     handleHashRouting();
     setupDateLimits();
     setLanguage('en');
+
+    await initCloudSync();
 };
 
 function handleHashRouting() {
@@ -1715,6 +1930,7 @@ function saveAdminSpotSettings(spotId) {
     state.pickupSpots[idx].translations.he.time=document.getElementById(`spot-time-he-${spotId}`).value;
     state.pickupSpots[idx].times=document.getElementById(`spot-slots-${spotId}`).value.split(',').map(s=>s.trim()).filter(Boolean);
     localStorage.setItem(SPOTS_STORAGE_KEY,JSON.stringify(state.pickupSpots));
+    if (isCloudSyncEnabled()) cloudPushSpots().catch(function(e) { console.error('Cloud spots save', e); });
     populateLocationSelect(); renderAdminSpotsList();
     showToast('Pickup Spot Updated',`Changes for ${state.pickupSpots[idx].translations.en.name} saved.`);
 }
@@ -1804,7 +2020,7 @@ function updateAdminOrderStatus(id, newStatus) {
 }
 
 function clearSimulatedOrders() {
-    if(confirm('Clear all orders? This resets the customer dashboard.')){ state.orders=[]; localStorage.removeItem(ORDERS_STORAGE_KEY); renderAdminOrdersLog(); renderMyOrders(); if(state.currentAdminTab==='analytics') renderAdminAnalytics(); showToast('Log Cleared','All orders wiped.'); }
+    if(confirm('Clear all orders? This resets the customer dashboard.')){ state.orders=[]; localStorage.removeItem(ORDERS_STORAGE_KEY); saveOrders(); renderAdminOrdersLog(); renderMyOrders(); if(state.currentAdminTab==='analytics') renderAdminAnalytics(); showToast('Log Cleared','All orders wiped.'); }
 }
 
 // ================================================================
