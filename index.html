@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BANCHAN | Traditional K-Food in Jerusalem</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,6 +34,9 @@
         .page-section { transition:opacity 0.2s ease-in-out; }
         @keyframes subtle-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
         .help-trigger { animation:subtle-bounce 3s infinite ease-in-out; }
+        .analytics-heat { transition: background-color 0.2s; }
+        .admin-tab-scroll { -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .admin-tab-scroll::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="bg-stone-50 text-stone-850 min-h-screen flex flex-col antialiased">
@@ -323,10 +327,11 @@
                         <i class="fa-solid fa-arrow-right-from-bracket mr-1 rtl:ml-1"></i> Lock Portal
                     </button>
                 </div>
-                <div class="flex border-b border-stone-200">
-                    <button onclick="switchAdminTab('menu')" id="admin-tab-btn-menu" class="admin-tab-btn border-b-2 border-amber-800 text-stone-900 py-3 px-6 text-sm font-bold">Manage Menu items</button>
-                    <button onclick="switchAdminTab('spots')" id="admin-tab-btn-spots" class="admin-tab-btn border-b-2 border-transparent text-stone-500 hover:text-stone-950 py-3 px-6 text-sm font-bold">Pickup Settings</button>
-                    <button onclick="switchAdminTab('orders')" id="admin-tab-btn-orders" class="admin-tab-btn border-b-2 border-transparent text-stone-500 hover:text-stone-950 py-3 px-6 text-sm font-bold">Incoming Reservations</button>
+                <div class="flex border-b border-stone-200 overflow-x-auto admin-tab-scroll">
+                    <button onclick="switchAdminTab('menu')" id="admin-tab-btn-menu" class="admin-tab-btn border-b-2 border-amber-800 text-stone-900 py-3 px-6 text-sm font-bold whitespace-nowrap shrink-0">Manage Menu items</button>
+                    <button onclick="switchAdminTab('spots')" id="admin-tab-btn-spots" class="admin-tab-btn border-b-2 border-transparent text-stone-500 hover:text-stone-950 py-3 px-6 text-sm font-bold whitespace-nowrap shrink-0">Pickup Settings</button>
+                    <button onclick="switchAdminTab('orders')" id="admin-tab-btn-orders" class="admin-tab-btn border-b-2 border-transparent text-stone-500 hover:text-stone-950 py-3 px-6 text-sm font-bold whitespace-nowrap shrink-0">Incoming Reservations</button>
+                    <button onclick="switchAdminTab('analytics')" id="admin-tab-btn-analytics" class="admin-tab-btn border-b-2 border-transparent text-stone-500 hover:text-stone-950 py-3 px-6 text-sm font-bold whitespace-nowrap shrink-0"><i class="fa-solid fa-chart-line mr-1.5"></i>Analytics</button>
                 </div>
                 <div id="admin-subtab-menu" class="admin-subtab space-y-6">
                     <div class="flex items-center justify-between">
@@ -397,6 +402,76 @@
                         <button onclick="clearSimulatedOrders()" class="text-xs text-red-600 hover:underline"><i class="fa-solid fa-trash-can"></i> Clear All Orders</button>
                     </div>
                     <div id="admin-orders-log" class="space-y-4"></div>
+                </div>
+                <div id="admin-subtab-analytics" class="admin-subtab hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-black text-stone-900">Sales Analytics</h3>
+                            <p class="text-xs text-stone-500 mt-1">Revenue trends, top dishes, and pickup spot performance</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2" id="analytics-period-btns">
+                            <button type="button" onclick="setAnalyticsPeriod(7)" data-period="7" class="analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-stone-200 bg-white text-stone-600 hover:border-amber-800">7 days</button>
+                            <button type="button" onclick="setAnalyticsPeriod(30)" data-period="30" class="analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-amber-800 bg-amber-50 text-amber-900">30 days</button>
+                            <button type="button" onclick="setAnalyticsPeriod(90)" data-period="90" class="analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-stone-200 bg-white text-stone-600 hover:border-amber-800">90 days</button>
+                            <button type="button" onclick="setAnalyticsPeriod(0)" data-period="0" class="analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-stone-200 bg-white text-stone-600 hover:border-amber-800">All time</button>
+                        </div>
+                    </div>
+                    <div id="analytics-empty" class="hidden p-12 text-center bg-white border border-stone-200 rounded-3xl">
+                        <i class="fa-solid fa-chart-pie text-4xl text-stone-300 mb-3"></i>
+                        <p class="text-sm font-bold text-stone-600">No order data yet</p>
+                        <p class="text-xs text-stone-400 mt-1">Analytics will appear after customers place reservations.</p>
+                    </div>
+                    <div id="analytics-content" class="space-y-6">
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="analytics-kpis"></div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+                                <h4 class="text-sm font-black text-stone-900 mb-1">Revenue Trend</h4>
+                                <p class="text-[10px] text-stone-400 mb-4">Daily sales amount (₪)</p>
+                                <div class="h-56"><canvas id="chart-revenue-trend"></canvas></div>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+                                <h4 class="text-sm font-black text-stone-900 mb-1">Order Volume Trend</h4>
+                                <p class="text-[10px] text-stone-400 mb-4">Number of reservations per day</p>
+                                <div class="h-56"><canvas id="chart-orders-trend"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h4 class="text-sm font-black text-stone-900">Top Menu Items</h4>
+                                        <p class="text-[10px] text-stone-400">Best sellers by selected metric</p>
+                                    </div>
+                                    <select id="analytics-menu-metric" onchange="renderAdminAnalytics()" class="text-xs font-bold border border-stone-300 rounded-lg px-2 py-1 bg-stone-50">
+                                        <option value="revenue">By Revenue</option>
+                                        <option value="qty">By Quantity</option>
+                                    </select>
+                                </div>
+                                <div class="h-64"><canvas id="chart-top-menu"></canvas></div>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+                                <h4 class="text-sm font-black text-stone-900 mb-1">Revenue by Pickup Spot</h4>
+                                <p class="text-[10px] text-stone-400 mb-4">Which locations drive the most sales</p>
+                                <div class="h-64"><canvas id="chart-locations"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+                            <h4 class="text-sm font-black text-stone-900 mb-1">Menu × Pickup Spot Matrix</h4>
+                            <p class="text-[10px] text-stone-400 mb-4">Units sold per dish at each location (darker = more sales)</p>
+                            <div id="analytics-matrix-wrap" class="overflow-x-auto"></div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+                                <h4 class="text-sm font-black text-stone-900 mb-4">Top Combos by Location</h4>
+                                <div id="analytics-top-combos" class="space-y-2 text-xs max-h-64 overflow-y-auto"></div>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+                                <h4 class="text-sm font-black text-stone-900 mb-1">Payment Methods</h4>
+                                <p class="text-[10px] text-stone-400 mb-4">Order count by payment type</p>
+                                <div class="h-52"><canvas id="chart-payment"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -866,6 +941,7 @@ function setupStorageSync() {
             state.orders = JSON.parse(e.newValue);
             renderMyOrders();
             if (state.isAdminAuthenticated && state.currentAdminTab === 'orders') renderAdminOrdersLog();
+            if (state.isAdminAuthenticated && state.currentAdminTab === 'analytics') renderAdminAnalytics();
         }
         if (e.key === MENU_STORAGE_KEY && e.newValue) {
             state.menuItems = JSON.parse(e.newValue).map(mergeMenuWithDefaults);
@@ -1308,7 +1384,8 @@ async function handlePlaceOrder(event) {
         cart:[...state.cart],
         pickup:{ locationKey, locationNameEN:spotObj.translations['en'].name, locationNameHE:spotObj.translations['he'].name, date:pDate, time:pTime, day:days[dateObj.getDay()] },
         paymentMethod, status:'cooking', total:orderTotal,
-        timestamp:new Date().toLocaleDateString(state.language==='he'?'he-IL':'en-US')
+        timestamp:new Date().toLocaleDateString(state.language==='he'?'he-IL':'en-US'),
+        createdAt: new Date().toISOString()
     };
 
     // 1. Google Sheets에 저장
@@ -1488,6 +1565,7 @@ function switchAdminTab(subtabId) {
     if(subtabId==='menu') renderAdminMenuList();
     else if(subtabId==='spots') renderAdminSpotsList();
     else if(subtabId==='orders') renderAdminOrdersLog();
+    else if(subtabId==='analytics') renderAdminAnalytics();
 }
 
 function renderAdminMenuList() {
@@ -1601,7 +1679,321 @@ function updateAdminOrderStatus(id, newStatus) {
 }
 
 function clearSimulatedOrders() {
-    if(confirm('Clear all orders? This resets the customer dashboard.')){ state.orders=[]; localStorage.removeItem(ORDERS_STORAGE_KEY); renderAdminOrdersLog(); renderMyOrders(); showToast('Log Cleared','All orders wiped.'); }
+    if(confirm('Clear all orders? This resets the customer dashboard.')){ state.orders=[]; localStorage.removeItem(ORDERS_STORAGE_KEY); renderAdminOrdersLog(); renderMyOrders(); if(state.currentAdminTab==='analytics') renderAdminAnalytics(); showToast('Log Cleared','All orders wiped.'); }
+}
+
+// ================================================================
+// ADMIN ANALYTICS
+// ================================================================
+let analyticsCharts = {};
+let analyticsPeriodDays = 30;
+
+const ANALYTICS_COLORS = ['#92400e','#b45309','#d97706','#f59e0b','#78716c','#57534e','#a8a29e','#44403c'];
+
+function setAnalyticsPeriod(days) {
+    analyticsPeriodDays = days;
+    document.querySelectorAll('.analytics-period-btn').forEach(btn => {
+        const p = parseInt(btn.dataset.period, 10);
+        const active = p === days;
+        btn.className = active
+            ? 'analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-amber-800 bg-amber-50 text-amber-900'
+            : 'analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-stone-200 bg-white text-stone-600 hover:border-amber-800';
+    });
+    renderAdminAnalytics();
+}
+
+function destroyAnalyticsCharts() {
+    Object.values(analyticsCharts).forEach(ch => { try { ch.destroy(); } catch(e) {} });
+    analyticsCharts = {};
+}
+
+function getOrderDate(ord) {
+    if (ord.createdAt) {
+        const d = new Date(ord.createdAt);
+        if (!isNaN(d)) return d;
+    }
+    if (ord.pickup?.date) {
+        const d = new Date(ord.pickup.date + 'T12:00:00');
+        if (!isNaN(d)) return d;
+    }
+    const parsed = Date.parse(ord.timestamp);
+    if (!isNaN(parsed)) return new Date(parsed);
+    return new Date();
+}
+
+function filterOrdersForAnalytics(orders) {
+    if (!analyticsPeriodDays) return orders;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - analyticsPeriodDays);
+    cutoff.setHours(0, 0, 0, 0);
+    return orders.filter(o => getOrderDate(o) >= cutoff);
+}
+
+function computeAnalytics(orders) {
+    const menuStats = {};
+    const locationStats = {};
+    const menuLocation = {};
+    const daily = {};
+    const paymentStats = {};
+    let totalRevenue = 0, totalUnits = 0;
+
+    orders.forEach(ord => {
+        const rev = ord.total || 0;
+        totalRevenue += rev;
+        const dateKey = getOrderDate(ord).toISOString().slice(0, 10);
+        if (!daily[dateKey]) daily[dateKey] = { revenue: 0, orders: 0 };
+        daily[dateKey].revenue += rev;
+        daily[dateKey].orders += 1;
+
+        const locKey = ord.pickup?.locationKey || 'unknown';
+        const locName = ord.pickup?.locationNameEN || 'Unknown';
+        if (!locationStats[locKey]) locationStats[locKey] = { name: locName, revenue: 0, orders: 0 };
+        locationStats[locKey].revenue += rev;
+        locationStats[locKey].orders += 1;
+
+        const pay = ord.paymentMethod || 'cash';
+        paymentStats[pay] = (paymentStats[pay] || 0) + 1;
+
+        (ord.cart || []).forEach(it => {
+            const id = it.product?.id || it.product?.translations?.en?.name || 'unknown';
+            const name = it.product?.translations?.en?.name || 'Unknown';
+            const lineRev = (it.product?.price || 0) * (it.quantity || 0);
+            const qty = it.quantity || 0;
+            totalUnits += qty;
+            if (!menuStats[id]) menuStats[id] = { id, name, qty: 0, revenue: 0 };
+            menuStats[id].qty += qty;
+            menuStats[id].revenue += lineRev;
+
+            const mlKey = id + '|' + locKey;
+            if (!menuLocation[mlKey]) menuLocation[mlKey] = { menuId: id, menuName: name, locKey, locName, qty: 0, revenue: 0 };
+            menuLocation[mlKey].qty += qty;
+            menuLocation[mlKey].revenue += lineRev;
+        });
+    });
+
+    const sortedDays = Object.keys(daily).sort();
+    const topMenus = Object.values(menuStats).sort((a, b) => b.revenue - a.revenue);
+    const topLocations = Object.values(locationStats).sort((a, b) => b.revenue - a.revenue);
+    const combos = Object.values(menuLocation).sort((a, b) => b.qty - a.qty).slice(0, 12);
+
+    return {
+        totalRevenue, totalUnits, orderCount: orders.length,
+        avgOrder: orders.length ? totalRevenue / orders.length : 0,
+        sortedDays, daily, topMenus, topLocations, menuLocation, combos, paymentStats
+    };
+}
+
+function fillDateGaps(sortedDays, daily, periodDays) {
+    if (!periodDays) {
+        return {
+            labels: sortedDays.map(d => d.slice(5)),
+            revenues: sortedDays.map(d => daily[d].revenue),
+            orders: sortedDays.map(d => daily[d].orders)
+        };
+    }
+    if (sortedDays.length === 0) return { labels: [], revenues: [], orders: [] };
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - periodDays + 1);
+    start.setHours(0, 0, 0, 0);
+    const labels = [], revenues = [], orderCounts = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const key = d.toISOString().slice(0, 10);
+        labels.push(key.slice(5));
+        revenues.push(daily[key]?.revenue || 0);
+        orderCounts.push(daily[key]?.orders || 0);
+    }
+    return { labels, revenues, orders: orderCounts };
+}
+
+function renderAnalyticsKpis(data) {
+    const el = document.getElementById('analytics-kpis');
+    if (!el) return;
+    const cards = [
+        { label: 'Total Revenue', value: '₪' + Math.round(data.totalRevenue), icon: 'fa-shekel-sign', color: 'amber' },
+        { label: 'Orders', value: data.orderCount, icon: 'fa-receipt', color: 'stone' },
+        { label: 'Avg. Order Value', value: '₪' + Math.round(data.avgOrder), icon: 'fa-chart-simple', color: 'amber' },
+        { label: 'Units Sold', value: data.totalUnits, icon: 'fa-box', color: 'stone' }
+    ];
+    el.innerHTML = cards.map(c => `
+        <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-xs">
+            <div class="flex items-center gap-2 text-amber-800 mb-2"><i class="fa-solid ${c.icon} text-xs"></i><span class="text-[10px] font-bold uppercase text-stone-500">${c.label}</span></div>
+            <p class="text-2xl font-black text-stone-900">${c.value}</p>
+        </div>`).join('');
+}
+
+function renderAnalyticsMatrix(menuLocation, topMenus, locations) {
+    const wrap = document.getElementById('analytics-matrix-wrap');
+    if (!wrap) return;
+    const menus = topMenus.slice(0, 8);
+    const locs = locations.slice(0, 6);
+    if (menus.length === 0 || locs.length === 0) {
+        wrap.innerHTML = '<p class="text-xs text-stone-400 py-4 text-center">Not enough data for matrix view.</p>';
+        return;
+    }
+    let maxQty = 1;
+    menus.forEach(m => locs.forEach(l => {
+        const q = (menuLocation[m.id + '|' + l.locKey] || { qty: 0 }).qty;
+        if (q > maxQty) maxQty = q;
+    }));
+
+    let html = '<table class="w-full text-[10px] border-collapse min-w-[480px]"><thead><tr><th class="text-start p-2 font-bold text-stone-500 border-b border-stone-200">Menu ↓ / Spot →</th>';
+    locs.forEach(l => { html += `<th class="p-2 font-bold text-stone-700 border-b border-stone-200 text-center max-w-[90px] truncate" title="${l.name}">${l.name.split(' ')[0]}</th>`; });
+    html += '</tr></thead><tbody>';
+    menus.forEach(m => {
+        html += `<tr><td class="p-2 font-bold text-stone-800 border-b border-stone-100 whitespace-nowrap">${m.name}</td>`;
+        locs.forEach(l => {
+            const cell = menuLocation[m.id + '|' + l.locKey] || { qty: 0, revenue: 0 };
+            const intensity = cell.qty / maxQty;
+            const bg = cell.qty === 0 ? '#fafaf9' : `rgba(146, 64, 14, ${0.12 + intensity * 0.55})`;
+            html += `<td class="p-2 border-b border-stone-100 text-center analytics-heat font-bold" style="background:${bg}" title="₪${Math.round(cell.revenue)}">${cell.qty || '—'}</td>`;
+        });
+        html += '</tr>';
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+}
+
+function renderAnalyticsCombos(combos) {
+    const el = document.getElementById('analytics-top-combos');
+    if (!el) return;
+    if (combos.length === 0) {
+        el.innerHTML = '<p class="text-stone-400 text-center py-4">No combo data yet.</p>';
+        return;
+    }
+    el.innerHTML = combos.map((c, i) => `
+        <div class="flex items-center justify-between p-2.5 bg-stone-50 rounded-xl border border-stone-100">
+            <div class="flex items-center gap-2 min-w-0">
+                <span class="w-5 h-5 rounded-lg bg-amber-100 text-amber-900 text-[9px] font-black flex items-center justify-center shrink-0">${i + 1}</span>
+                <div class="min-w-0"><p class="font-bold text-stone-800 truncate">${c.menuName}</p><p class="text-[10px] text-stone-400 truncate"><i class="fa-solid fa-location-dot text-amber-700"></i> ${c.locName}</p></div>
+            </div>
+            <div class="text-end shrink-0 ps-2"><span class="font-black text-amber-800">${c.qty}</span> <span class="text-stone-400">units</span></div>
+        </div>`).join('');
+}
+
+function makeChart(id, config) {
+    const canvas = document.getElementById(id);
+    if (!canvas || typeof Chart === 'undefined') return;
+    if (analyticsCharts[id]) analyticsCharts[id].destroy();
+    analyticsCharts[id] = new Chart(canvas, config);
+}
+
+function renderAdminAnalytics() {
+    destroyAnalyticsCharts();
+    const emptyEl = document.getElementById('analytics-empty');
+    const contentEl = document.getElementById('analytics-content');
+    const filtered = filterOrdersForAnalytics(state.orders);
+
+    if (filtered.length === 0) {
+        if (emptyEl) emptyEl.classList.remove('hidden');
+        if (contentEl) contentEl.classList.add('hidden');
+        return;
+    }
+    if (emptyEl) emptyEl.classList.add('hidden');
+    if (contentEl) contentEl.classList.remove('hidden');
+
+    const data = computeAnalytics(filtered);
+    renderAnalyticsKpis(data);
+
+    const trend = fillDateGaps(data.sortedDays, data.daily, analyticsPeriodDays);
+    const chartDefaults = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+
+    makeChart('chart-revenue-trend', {
+        type: 'line',
+        data: {
+            labels: trend.labels,
+            datasets: [{
+                label: 'Revenue (₪)',
+                data: trend.revenues,
+                borderColor: '#92400e',
+                backgroundColor: 'rgba(146, 64, 14, 0.12)',
+                fill: true,
+                tension: 0.35,
+                pointRadius: 3,
+                pointBackgroundColor: '#92400e'
+            }]
+        },
+        options: { ...chartDefaults, scales: { y: { beginAtZero: true, ticks: { callback: v => '₪' + v } } } }
+    });
+
+    makeChart('chart-orders-trend', {
+        type: 'bar',
+        data: {
+            labels: trend.labels,
+            datasets: [{
+                label: 'Orders',
+                data: trend.orders,
+                backgroundColor: 'rgba(120, 113, 108, 0.7)',
+                borderRadius: 4
+            }]
+        },
+        options: { ...chartDefaults, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    });
+
+    const metric = document.getElementById('analytics-menu-metric')?.value || 'revenue';
+    const menuSorted = [...data.topMenus].sort((a, b) => metric === 'qty' ? b.qty - a.qty : b.revenue - a.revenue).slice(0, 8);
+    makeChart('chart-top-menu', {
+        type: 'bar',
+        data: {
+            labels: menuSorted.map(m => m.name.length > 18 ? m.name.slice(0, 16) + '…' : m.name),
+            datasets: [{
+                label: metric === 'qty' ? 'Units' : 'Revenue (₪)',
+                data: menuSorted.map(m => metric === 'qty' ? m.qty : m.revenue),
+                backgroundColor: ANALYTICS_COLORS.slice(0, menuSorted.length),
+                borderRadius: 6
+            }]
+        },
+        options: { ...chartDefaults, indexAxis: 'y', scales: { x: { beginAtZero: true } } }
+    });
+
+    const locSorted = data.topLocations.slice(0, 6);
+    makeChart('chart-locations', {
+        type: 'doughnut',
+        data: {
+            labels: locSorted.map(l => l.name),
+            datasets: [{
+                data: locSorted.map(l => l.revenue),
+                backgroundColor: ANALYTICS_COLORS,
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } },
+                tooltip: { callbacks: { label: ctx => ` ₪${Math.round(ctx.raw)}` } }
+            }
+        }
+    });
+
+    const payLabels = { cash: 'Cash', bit_prepaid: 'Bit Prepaid', bit_pickup: 'Bit on Pickup', card: 'Card' };
+    const payKeys = Object.keys(data.paymentStats);
+    makeChart('chart-payment', {
+        type: 'pie',
+        data: {
+            labels: payKeys.map(k => payLabels[k] || k),
+            datasets: [{ data: payKeys.map(k => data.paymentStats[k]), backgroundColor: ANALYTICS_COLORS, borderWidth: 2, borderColor: '#fff' }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
+        }
+    });
+
+    const locKeysFromStats = Object.entries(
+        filtered.reduce((acc, ord) => {
+            const k = ord.pickup?.locationKey || 'unknown';
+            if (!acc[k]) acc[k] = { locKey: k, name: ord.pickup?.locationNameEN || k, revenue: 0 };
+            acc[k].revenue += ord.total || 0;
+            return acc;
+        }, {})
+    ).map(([k, v]) => ({ locKey: k, name: v.name, revenue: v.revenue })).sort((a, b) => b.revenue - a.revenue);
+
+    renderAnalyticsMatrix(data.menuLocation, data.topMenus, locKeysFromStats);
+    renderAnalyticsCombos(data.combos);
 }
 </script>
 </body>
