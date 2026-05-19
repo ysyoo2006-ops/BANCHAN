@@ -37,6 +37,11 @@
         .analytics-heat { transition: background-color 0.2s; }
         .admin-tab-scroll { -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .admin-tab-scroll::-webkit-scrollbar { display: none; }
+        .analytics-kpi-card { border-left: 4px solid var(--kpi-accent, #2563eb); }
+        .analytics-period-btn.active-period { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; }
+        .analytics-chart-card { background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(15,23,42,0.06); }
+        .analytics-chart-card h4 { color: #0f172a; }
+        .analytics-chart-card p { color: #64748b; }
     </style>
 </head>
 <body class="bg-stone-50 text-stone-850 min-h-screen flex flex-col antialiased">
@@ -398,22 +403,37 @@
                 </div>
                 <div id="admin-subtab-orders" class="admin-subtab hidden space-y-6">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-black text-stone-900">Store Orders History Log</h3>
+                        <h3 class="text-lg font-black text-stone-900">Store Orders</h3>
                         <button onclick="clearSimulatedOrders()" class="text-xs text-red-600 hover:underline"><i class="fa-solid fa-trash-can"></i> Clear All Orders</button>
                     </div>
-                    <div id="admin-orders-log" class="space-y-4"></div>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+                            <h4 class="text-sm font-black text-stone-900">Active Reservations</h4>
+                            <span id="admin-active-count" class="text-[10px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div id="admin-orders-active" class="space-y-4"></div>
+                    </div>
+                    <div class="space-y-4 pt-6 border-t border-stone-200">
+                        <div class="flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                            <h4 class="text-sm font-black text-stone-900">Pickup Completed</h4>
+                            <span id="admin-completed-count" class="text-[10px] font-bold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div id="admin-orders-completed" class="space-y-4"></div>
+                    </div>
                 </div>
-                <div id="admin-subtab-analytics" class="admin-subtab hidden space-y-6">
+                <div id="admin-subtab-analytics" class="admin-subtab hidden space-y-6 bg-slate-50 rounded-3xl p-4 sm:p-6 border border-slate-200">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h3 class="text-lg font-black text-stone-900">Sales Analytics</h3>
                             <p class="text-xs text-stone-500 mt-1">Revenue trends, top dishes, and pickup spot performance</p>
                         </div>
                         <div class="flex flex-wrap gap-2" id="analytics-period-btns">
-                            <button type="button" onclick="setAnalyticsPeriod(7)" data-period="7" class="analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-stone-200 bg-white text-stone-600 hover:border-amber-800">7 days</button>
-                            <button type="button" onclick="setAnalyticsPeriod(30)" data-period="30" class="analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-amber-800 bg-amber-50 text-amber-900">30 days</button>
-                            <button type="button" onclick="setAnalyticsPeriod(90)" data-period="90" class="analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-stone-200 bg-white text-stone-600 hover:border-amber-800">90 days</button>
-                            <button type="button" onclick="setAnalyticsPeriod(0)" data-period="0" class="analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-stone-200 bg-white text-stone-600 hover:border-amber-800">All time</button>
+                            <button type="button" onclick="setAnalyticsPeriod(7)" data-period="7" class="analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-blue-500">7 days</button>
+                            <button type="button" onclick="setAnalyticsPeriod(30)" data-period="30" class="analytics-period-btn active-period px-3 py-1.5 text-xs font-bold rounded-lg">30 days</button>
+                            <button type="button" onclick="setAnalyticsPeriod(90)" data-period="90" class="analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-blue-500">90 days</button>
+                            <button type="button" onclick="setAnalyticsPeriod(0)" data-period="0" class="analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-blue-500">All time</button>
                         </div>
                     </div>
                     <div id="analytics-empty" class="hidden p-12 text-center bg-white border border-stone-200 rounded-3xl">
@@ -424,19 +444,19 @@
                     <div id="analytics-content" class="space-y-6">
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="analytics-kpis"></div>
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
-                                <h4 class="text-sm font-black text-stone-900 mb-1">Revenue Trend</h4>
+                            <div class="analytics-chart-card p-5 rounded-2xl">
+                                <h4 class="text-sm font-black mb-1">Revenue Trend</h4>
                                 <p class="text-[10px] text-stone-400 mb-4">Daily sales amount (₪)</p>
                                 <div class="h-56"><canvas id="chart-revenue-trend"></canvas></div>
                             </div>
-                            <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+                            <div class="analytics-chart-card p-5 rounded-2xl">
                                 <h4 class="text-sm font-black text-stone-900 mb-1">Order Volume Trend</h4>
                                 <p class="text-[10px] text-stone-400 mb-4">Number of reservations per day</p>
                                 <div class="h-56"><canvas id="chart-orders-trend"></canvas></div>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+                            <div class="analytics-chart-card p-5 rounded-2xl">
                                 <div class="flex items-center justify-between mb-4">
                                     <div>
                                         <h4 class="text-sm font-black text-stone-900">Top Menu Items</h4>
@@ -449,23 +469,23 @@
                                 </div>
                                 <div class="h-64"><canvas id="chart-top-menu"></canvas></div>
                             </div>
-                            <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+                            <div class="analytics-chart-card p-5 rounded-2xl">
                                 <h4 class="text-sm font-black text-stone-900 mb-1">Revenue by Pickup Spot</h4>
                                 <p class="text-[10px] text-stone-400 mb-4">Which locations drive the most sales</p>
                                 <div class="h-64"><canvas id="chart-locations"></canvas></div>
                             </div>
                         </div>
-                        <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
-                            <h4 class="text-sm font-black text-stone-900 mb-1">Menu × Pickup Spot Matrix</h4>
+                        <div class="analytics-chart-card p-5 rounded-2xl">
+                            <h4 class="text-sm font-black mb-1">Menu × Pickup Spot Matrix</h4>
                             <p class="text-[10px] text-stone-400 mb-4">Units sold per dish at each location (darker = more sales)</p>
                             <div id="analytics-matrix-wrap" class="overflow-x-auto"></div>
                         </div>
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+                            <div class="analytics-chart-card p-5 rounded-2xl">
                                 <h4 class="text-sm font-black text-stone-900 mb-4">Top Combos by Location</h4>
                                 <div id="analytics-top-combos" class="space-y-2 text-xs max-h-64 overflow-y-auto"></div>
                             </div>
-                            <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+                            <div class="analytics-chart-card p-5 rounded-2xl">
                                 <h4 class="text-sm font-black text-stone-900 mb-1">Payment Methods</h4>
                                 <p class="text-[10px] text-stone-400 mb-4">Order count by payment type</p>
                                 <div class="h-52"><canvas id="chart-payment"></canvas></div>
@@ -871,7 +891,34 @@ function loadOrders() {
 }
 
 function saveOrders() {
-    localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(state.orders));
+    try {
+        localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(state.orders));
+        return true;
+    } catch (err) {
+        console.error('Failed to save orders:', err);
+        return false;
+    }
+}
+
+function slimProductForStorage(product) {
+    if (!product) return product;
+    const img = product.image && String(product.image).startsWith('data:') ? '' : (product.image || '');
+    return { id: product.id, category: product.category, price: product.price, unit: product.unit, image: img, translations: product.translations };
+}
+
+function slimCartForStorage(cart) {
+    return cart.map(it => ({ product: slimProductForStorage(it.product), quantity: it.quantity }));
+}
+
+function isPickupComplete(ord) {
+    return ord.status === 'picked_up' || ord.status === 'delivered';
+}
+
+function resetCheckoutSubmitButton() {
+    const submitBtn = document.getElementById('checkout-btn-submit');
+    if (!submitBtn) return;
+    submitBtn.disabled = false;
+    updatePaymentButtonText();
 }
 
 function getMinOrderQty(product) {
@@ -1362,60 +1409,78 @@ async function handlePlaceOrder(event) {
         }
         return;
     }
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Processing...</span>';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Processing...</span>';
+    }
 
-    const locationKey=document.getElementById('pickup-location').value;
-    const pDate=document.getElementById('pickup-date').value;
-    const pTime=document.getElementById('pickup-time').value;
-    const name=document.getElementById('orderer-name').value;
-    const email=document.getElementById('orderer-email').value;
-    const memo=document.getElementById('order-memo').value;
-    const disposableChecked=document.getElementById('disposable-utensils').checked;
-    const paymentMethod=document.querySelector('input[name="payment-method"]:checked').value;
-    const spotObj=state.pickupSpots.find(s=>s.id===locationKey);
-    const dateObj=new Date(pDate);
-    const days=state.language==='he'?["א'","ב'","ג'","ד'","ה'","ו'","ש'"]:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const orderTotal=getCheckoutTotalPrice();
+    const cartSnapshot = state.cart.map(it => ({ product: { ...it.product, translations: { en: { ...it.product.translations.en }, he: { ...(it.product.translations.he || {}) } } }, quantity: it.quantity }));
 
-    const newOrder={
-        id:'BA-'+Math.floor(100000+Math.random()*900000),
-        customer:{name,email,memo,disposableUtensils:disposableChecked},
-        cart:[...state.cart],
-        pickup:{ locationKey, locationNameEN:spotObj.translations['en'].name, locationNameHE:spotObj.translations['he'].name, date:pDate, time:pTime, day:days[dateObj.getDay()] },
-        paymentMethod, status:'cooking', total:orderTotal,
-        timestamp:new Date().toLocaleDateString(state.language==='he'?'he-IL':'en-US'),
-        createdAt: new Date().toISOString()
-    };
+    try {
+        const locationKey = document.getElementById('pickup-location').value;
+        const pDate = document.getElementById('pickup-date').value;
+        const pTime = document.getElementById('pickup-time').value;
+        const name = document.getElementById('orderer-name').value;
+        const email = document.getElementById('orderer-email').value;
+        const memo = document.getElementById('order-memo').value;
+        const disposableChecked = document.getElementById('disposable-utensils').checked;
+        const paymentMethod = document.querySelector('input[name="payment-method"]:checked')?.value || 'cash';
+        const spotObj = state.pickupSpots.find(s => s.id === locationKey);
+        if (!spotObj) throw new Error('Invalid pickup location');
 
-    // 1. Google Sheets에 저장
-    const sheetsSaved = await saveOrderToSheets(newOrder);
+        const dateObj = new Date(pDate);
+        const days = state.language === 'he' ? ["א'","ב'","ג'","ד'","ה'","ו'","ש'"] : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        const orderTotal = getCheckoutTotalPrice();
 
-    // 2. EmailJS 발송
-    const cartFormatted=state.cart.map(it=>`${it.product.translations.en.name} (${it.product.unit}) x${it.quantity} - ₪${it.product.price*it.quantity}`).join('\n');
-    const emailOrders=state.cart.map(it=>({name:it.product.translations.en.name,units:it.quantity,price:it.product.price*it.quantity}));
-    if(disposableChecked) emailOrders.push({name:'Disposable Utensils Pack',units:1,price:5});
-    const emailParams={
-        order_id:newOrder.id, customer_name:name, customer_email:email,
-        order_items:cartFormatted, orders:emailOrders,
-        pickup_location:spotObj.translations['en'].name, pickup_date:pDate, pickup_time:pTime,
-        payment_method:t('pay_'+paymentMethod), disposable_utensils:disposableChecked?'Yes':'No',
-        total_amount:orderTotal, 'cost.total':orderTotal, admin_memo:memo||'None'
-    };
-    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_CUSTOMER_TEMPLATE, emailParams).catch(e=>console.error('Customer email error:',e));
-    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_ADMIN_TEMPLATE, emailParams).catch(e=>console.error('Admin email error:',e));
+        const newOrder = {
+            id: 'BA-' + Math.floor(100000 + Math.random() * 900000),
+            customer: { name, email, memo, disposableUtensils: disposableChecked },
+            cart: slimCartForStorage(cartSnapshot),
+            pickup: { locationKey, locationNameEN: spotObj.translations['en'].name, locationNameHE: spotObj.translations['he'].name, date: pDate, time: pTime, day: days[dateObj.getDay()] },
+            paymentMethod, status: 'cooking', total: orderTotal,
+            timestamp: new Date().toLocaleDateString(state.language === 'he' ? 'he-IL' : 'en-US'),
+            createdAt: new Date().toISOString()
+        };
 
-    // 3. 로컬 상태 저장 (localStorage — 탭/창 간 공유, 재접속 시 유지)
-    deductStockFromOrder(state.cart);
-    state.orders.unshift(newOrder);
-    saveOrders();
-    state.cart=[]; document.getElementById('disposable-utensils').checked=false;
-    updateCartUI(); document.getElementById('order-form').reset(); updatePickupTimeOptions('');
+        const cartFormatted = cartSnapshot.map(it => `${it.product.translations.en.name} (${it.product.unit}) x${it.quantity} - ₪${it.product.price * it.quantity}`).join('\n');
+        const emailOrders = cartSnapshot.map(it => ({ name: it.product.translations.en.name, units: it.quantity, price: it.product.price * it.quantity }));
+        if (disposableChecked) emailOrders.push({ name: 'Disposable Utensils Pack', units: 1, price: 5 });
+        const emailParams = {
+            order_id: newOrder.id, customer_name: name, customer_email: email,
+            order_items: cartFormatted, orders: emailOrders,
+            pickup_location: spotObj.translations['en'].name, pickup_date: pDate, pickup_time: pTime,
+            payment_method: t('pay_' + paymentMethod), disposable_utensils: disposableChecked ? 'Yes' : 'No',
+            total_amount: orderTotal, 'cost.total': orderTotal, admin_memo: memo || 'None'
+        };
 
-    submitBtn.disabled=false; updatePaymentButtonText();
-    showToast(t('toastOrderSuccess'), `${t('toastOrderSuccessDesc')} <strong>${newOrder.id}</strong>`);
-    if(sheetsSaved) setTimeout(()=>showToast(t('toastOrderSaved'),'Google Sheets ✓'),2500);
-    navigateTo('my-orders');
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_CUSTOMER_TEMPLATE, emailParams).catch(e => console.error('Customer email error:', e));
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_ADMIN_TEMPLATE, emailParams).catch(e => console.error('Admin email error:', e));
+        saveOrderToSheets(newOrder).then(sheetsSaved => {
+            if (sheetsSaved) setTimeout(() => showToast(t('toastOrderSaved'), 'Google Sheets ✓'), 2500);
+        }).catch(() => {});
+
+        deductStockFromOrder(cartSnapshot);
+        state.orders.unshift(newOrder);
+        if (!saveOrders()) {
+            showToast('Storage Warning', 'Order placed but local save failed. Email was still sent.', true);
+        }
+
+        state.cart = [];
+        const disposableEl = document.getElementById('disposable-utensils');
+        if (disposableEl) disposableEl.checked = false;
+        updateCartUI();
+        const orderForm = document.getElementById('order-form');
+        if (orderForm) orderForm.reset();
+        updatePickupTimeOptions('');
+
+        showToast(t('toastOrderSuccess'), `${t('toastOrderSuccessDesc')} <strong>${newOrder.id}</strong>`);
+        navigateTo('my-orders');
+    } catch (err) {
+        console.error('Order failed:', err);
+        showToast('Order Failed', err.message || 'Could not complete your reservation. Please try again.', true);
+    } finally {
+        resetCheckoutSubmitButton();
+    }
 }
 
 function renderMyOrders() {
@@ -1428,6 +1493,7 @@ function renderMyOrders() {
         let statusHTML='';
         if(ord.status==='cooking') statusHTML=`<span class="bg-amber-100 text-amber-900 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-fire-burner animate-spin"></i> ${t('statusCooking')}</span>`;
         else if(ord.status==='waiting') statusHTML=`<span class="bg-blue-100 text-blue-900 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-truck-fast animate-pulse"></i> ${t('statusWaiting')}</span>`;
+        else if(ord.status==='picked_up'||ord.status==='delivered') statusHTML=`<span class="bg-emerald-100 text-emerald-900 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-box-check"></i> ${state.language==='he'?'איסוף הושלם':t('statusCompleted')}</span>`;
         else statusHTML=`<span class="bg-emerald-100 text-emerald-900 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> ${t('statusCompleted')}</span>`;
         const itemRows=ord.cart.map(it=>{ const tr=it.product.translations[state.language]||it.product.translations['en']; return `<div class="flex justify-between items-center text-xs text-stone-700 py-1.5"><span>${tr.name} (${it.product.unit}) <strong class="text-stone-900">x${it.quantity}</strong></span><span class="font-bold">₪${it.product.price*it.quantity}</span></div>`; }).join('');
         let billingDisposableRow='';
@@ -1653,29 +1719,88 @@ function saveAdminSpotSettings(spotId) {
     showToast('Pickup Spot Updated',`Changes for ${state.pickupSpots[idx].translations.en.name} saved.`);
 }
 
+function buildAdminOrderCard(ord, isCompleted) {
+    let badge = '';
+    if (ord.status === 'cooking') badge = '<span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-1 rounded-lg">Cooking</span>';
+    else if (ord.status === 'waiting') badge = '<span class="bg-blue-100 text-blue-900 text-[10px] font-bold px-2 py-1 rounded-lg">Awaiting Pickup</span>';
+    else if (ord.status === 'picked_up' || ord.status === 'delivered') badge = '<span class="bg-emerald-100 text-emerald-900 text-[10px] font-bold px-2 py-1 rounded-lg"><i class="fa-solid fa-check mr-0.5"></i> Pickup Done</span>';
+    else badge = '<span class="bg-stone-100 text-stone-700 text-[10px] font-bold px-2 py-1 rounded-lg">' + ord.status + '</span>';
+    const items = (ord.cart || []).map(function(it) {
+        var n = (it.product && it.product.translations && it.product.translations.en && it.product.translations.en.name) || 'Item';
+        var u = (it.product && it.product.unit) || '';
+        return n + ' (' + u + ') x' + it.quantity;
+    }).join(', ');
+    var actions = isCompleted
+        ? '<button type="button" onclick="reopenAdminOrder(\'' + ord.id + '\')" class="text-[10px] font-bold text-stone-500 hover:text-amber-800 px-2 py-1 border border-stone-200 rounded-lg">Reopen</button>'
+        : '<select onchange="updateAdminOrderStatus(\'' + ord.id + '\',this.value)" class="bg-stone-50 border border-stone-300 rounded px-1.5 py-1 text-[10px] font-semibold"><option value="cooking"' + (ord.status==='cooking'?' selected':'') + '>Cooking</option><option value="waiting"' + (ord.status==='waiting'?' selected':'') + '>Awaiting Pickup</option></select><button type="button" onclick="markPickupComplete(\'' + ord.id + '\')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg ml-1"><i class="fa-solid fa-box-check"></i> Pickup Complete</button>';
+    var div = document.createElement('div');
+    div.className = isCompleted ? 'bg-stone-50 p-5 rounded-2xl border border-stone-200 text-xs space-y-3' : 'bg-white p-5 rounded-2xl border border-stone-200 shadow-xs text-xs space-y-3';
+    div.innerHTML = '<div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-stone-100 pb-2"><div><span class="font-black text-stone-900 text-sm">' + ord.id + '</span><span class="text-stone-400 text-[10px] ml-1">· ' + ord.timestamp + '</span></div><div class="flex flex-wrap items-center gap-2">' + badge + actions + '</div></div><div class="grid grid-cols-1 md:grid-cols-4 gap-2 text-stone-600"><div><strong>Customer:</strong> ' + ord.customer.name + '</div><div><strong>Spot:</strong> ' + ord.pickup.locationNameEN + ' (' + ord.pickup.time + ')</div><div><strong>Payment:</strong> ' + (ord.paymentMethod||'cash') + '</div><div><strong>Total:</strong> ₪' + ord.total + '</div></div><div class="bg-stone-50 p-2.5 rounded-lg text-[11px]"><strong>Dishes:</strong> ' + items + (ord.customer.disposableUtensils?' [Disposable Utensils]':'') + '</div>';
+    return div;
+}
+
 function renderAdminOrdersLog() {
-    const c=document.getElementById('admin-orders-log'); if(!c) return; c.innerHTML='';
-    if(state.orders.length===0){ c.innerHTML=`<div class="p-8 text-center text-stone-400 bg-white border border-stone-200 rounded-3xl"><i class="fa-solid fa-receipt text-3xl mb-2 text-stone-300"></i><p class="text-xs font-bold">No reservations logged yet.</p></div>`; return; }
-    state.orders.forEach(ord=>{
-        let badge='';
-        if(ord.status==='cooking') badge=`<span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-1 rounded-lg">Cooking</span>`;
-        else if(ord.status==='waiting') badge=`<span class="bg-blue-100 text-blue-900 text-[10px] font-bold px-2 py-1 rounded-lg">Awaiting Pickup</span>`;
-        else badge=`<span class="bg-emerald-100 text-emerald-900 text-[10px] font-bold px-2 py-1 rounded-lg">Completed</span>`;
-        const items=ord.cart.map(it=>`${it.product.translations.en.name} (${it.product.unit}) x${it.quantity}`).join(', ');
-        const div=document.createElement('div'); div.className='bg-white p-5 rounded-2xl border border-stone-200 shadow-xs text-xs space-y-3';
-        div.innerHTML=`<div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-stone-100 pb-2"><div><span class="font-black text-stone-900 text-sm">${ord.id}</span><span class="text-stone-400 text-[10px] ml-1">· ${ord.timestamp}</span></div><div class="flex items-center gap-2">${badge}<select onchange="updateAdminOrderStatus('${ord.id}',this.value)" class="bg-stone-50 border border-stone-300 rounded px-1.5 py-1 text-[10px] font-semibold"><option value="cooking" ${ord.status==='cooking'?'selected':''}>Cooking</option><option value="waiting" ${ord.status==='waiting'?'selected':''}>Awaiting Pickup</option><option value="delivered" ${ord.status==='delivered'?'selected':''}>Completed</option></select></div></div>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-2 text-stone-600"><div><strong>Customer:</strong> ${ord.customer.name}</div><div><strong>Spot:</strong> ${ord.pickup.locationNameEN} (${ord.pickup.time})</div><div><strong>Payment:</strong> ${ord.paymentMethod||'cash'}</div><div><strong>Total:</strong> ₪${ord.total}</div></div>
-        <div class="bg-stone-50 p-2.5 rounded-lg text-[11px]"><strong>Dishes:</strong> ${items}${ord.customer.disposableUtensils?' [Disposable Utensils]':''}</div>`;
-        c.appendChild(div);
-    });
+    var activeEl = document.getElementById('admin-orders-active');
+    var completedEl = document.getElementById('admin-orders-completed');
+    if (!activeEl || !completedEl) return;
+    var active = state.orders.filter(function(o) { return !isPickupComplete(o); });
+    var completed = state.orders.filter(function(o) { return isPickupComplete(o); });
+    var activeCount = document.getElementById('admin-active-count');
+    var completedCount = document.getElementById('admin-completed-count');
+    if (activeCount) activeCount.innerText = active.length;
+    if (completedCount) completedCount.innerText = completed.length;
+    activeEl.innerHTML = '';
+    completedEl.innerHTML = '';
+    if (state.orders.length === 0) {
+        activeEl.innerHTML = '<div class="p-8 text-center text-stone-400 bg-white border border-stone-200 rounded-3xl"><i class="fa-solid fa-receipt text-3xl mb-2 text-stone-300"></i><p class="text-xs font-bold">No reservations logged yet.</p></div>';
+        return;
+    }
+    if (active.length === 0) {
+        activeEl.innerHTML = '<p class="text-xs text-stone-400 text-center py-6 bg-white border border-dashed border-stone-200 rounded-2xl">No active orders.</p>';
+    } else {
+        active.forEach(function(ord) { activeEl.appendChild(buildAdminOrderCard(ord, false)); });
+    }
+    if (completed.length === 0) {
+        completedEl.innerHTML = '<p class="text-xs text-stone-400 text-center py-6 bg-stone-50 border border-dashed border-stone-200 rounded-2xl">Completed pickups will appear here.</p>';
+    } else {
+        completed.forEach(function(ord) { completedEl.appendChild(buildAdminOrderCard(ord, true)); });
+    }
+}
+
+function markPickupComplete(id) {
+    var idx = state.orders.findIndex(function(o) { return o.id === id; });
+    if (idx === -1) return;
+    state.orders[idx].status = 'picked_up';
+    state.orders[idx].pickedUpAt = new Date().toISOString();
+    saveOrders();
+    renderAdminOrdersLog();
+    renderMyOrders();
+    showToast('Pickup Complete', 'Order ' + id + ' moved to pickup completed.');
+}
+
+function reopenAdminOrder(id) {
+    var idx = state.orders.findIndex(function(o) { return o.id === id; });
+    if (idx === -1) return;
+    state.orders[idx].status = 'waiting';
+    delete state.orders[idx].pickedUpAt;
+    saveOrders();
+    renderAdminOrdersLog();
+    renderMyOrders();
+    showToast('Order Reopened', 'Order ' + id + ' is active again.');
 }
 
 function updateAdminOrderStatus(id, newStatus) {
-    const idx=state.orders.findIndex(o=>o.id===id); if(idx===-1) return;
-    state.orders[idx].status=newStatus;
+    var idx = state.orders.findIndex(function(o) { return o.id === id; });
+    if (idx === -1) return;
+    if (newStatus === 'picked_up' || newStatus === 'delivered') {
+        markPickupComplete(id);
+        return;
+    }
+    state.orders[idx].status = newStatus;
     saveOrders();
-    renderAdminOrdersLog(); renderMyOrders();
-    showToast('Status Updated',`Order ${id} status changed to ${newStatus}.`);
+    renderAdminOrdersLog();
+    renderMyOrders();
+    showToast('Status Updated', 'Order ' + id + ' status changed to ' + newStatus + '.');
 }
 
 function clearSimulatedOrders() {
@@ -1688,7 +1813,8 @@ function clearSimulatedOrders() {
 let analyticsCharts = {};
 let analyticsPeriodDays = 30;
 
-const ANALYTICS_COLORS = ['#92400e','#b45309','#d97706','#f59e0b','#78716c','#57534e','#a8a29e','#44403c'];
+const ANALYTICS_COLORS = ['#2563eb','#0891b2','#7c3aed','#059669','#ea580c','#6366f1','#14b8a6','#64748b'];
+const ANALYTICS_KPI_ACCENTS = ['#2563eb','#0891b2','#7c3aed','#059669'];
 
 function setAnalyticsPeriod(days) {
     analyticsPeriodDays = days;
@@ -1696,8 +1822,8 @@ function setAnalyticsPeriod(days) {
         const p = parseInt(btn.dataset.period, 10);
         const active = p === days;
         btn.className = active
-            ? 'analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-amber-800 bg-amber-50 text-amber-900'
-            : 'analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-stone-200 bg-white text-stone-600 hover:border-amber-800';
+            ? 'analytics-period-btn active-period px-3 py-1.5 text-xs font-bold rounded-lg'
+            : 'analytics-period-btn px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-blue-500 hover:text-blue-700';
     });
     renderAdminAnalytics();
 }
@@ -1815,10 +1941,10 @@ function renderAnalyticsKpis(data) {
         { label: 'Avg. Order Value', value: '₪' + Math.round(data.avgOrder), icon: 'fa-chart-simple', color: 'amber' },
         { label: 'Units Sold', value: data.totalUnits, icon: 'fa-box', color: 'stone' }
     ];
-    el.innerHTML = cards.map(c => `
-        <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-xs">
-            <div class="flex items-center gap-2 text-amber-800 mb-2"><i class="fa-solid ${c.icon} text-xs"></i><span class="text-[10px] font-bold uppercase text-stone-500">${c.label}</span></div>
-            <p class="text-2xl font-black text-stone-900">${c.value}</p>
+    el.innerHTML = cards.map((c, i) => `
+        <div class="analytics-kpi-card bg-white p-4 rounded-2xl border border-slate-200 shadow-xs" style="--kpi-accent:${ANALYTICS_KPI_ACCENTS[i]}">
+            <div class="flex items-center gap-2 mb-2"><i class="fa-solid ${c.icon} text-xs" style="color:${ANALYTICS_KPI_ACCENTS[i]}"></i><span class="text-[10px] font-bold uppercase text-slate-500">${c.label}</span></div>
+            <p class="text-2xl font-black text-slate-900">${c.value}</p>
         </div>`).join('');
 }
 
@@ -1845,7 +1971,7 @@ function renderAnalyticsMatrix(menuLocation, topMenus, locations) {
         locs.forEach(l => {
             const cell = menuLocation[m.id + '|' + l.locKey] || { qty: 0, revenue: 0 };
             const intensity = cell.qty / maxQty;
-            const bg = cell.qty === 0 ? '#fafaf9' : `rgba(146, 64, 14, ${0.12 + intensity * 0.55})`;
+            const bg = cell.qty === 0 ? '#f8fafc' : `rgba(37, 99, 235, ${0.08 + intensity * 0.45})`;
             html += `<td class="p-2 border-b border-stone-100 text-center analytics-heat font-bold" style="background:${bg}" title="₪${Math.round(cell.revenue)}">${cell.qty || '—'}</td>`;
         });
         html += '</tr>';
@@ -1864,10 +1990,10 @@ function renderAnalyticsCombos(combos) {
     el.innerHTML = combos.map((c, i) => `
         <div class="flex items-center justify-between p-2.5 bg-stone-50 rounded-xl border border-stone-100">
             <div class="flex items-center gap-2 min-w-0">
-                <span class="w-5 h-5 rounded-lg bg-amber-100 text-amber-900 text-[9px] font-black flex items-center justify-center shrink-0">${i + 1}</span>
+                <span class="w-5 h-5 rounded-lg bg-blue-100 text-blue-800 text-[9px] font-black flex items-center justify-center shrink-0">${i + 1}</span>
                 <div class="min-w-0"><p class="font-bold text-stone-800 truncate">${c.menuName}</p><p class="text-[10px] text-stone-400 truncate"><i class="fa-solid fa-location-dot text-amber-700"></i> ${c.locName}</p></div>
             </div>
-            <div class="text-end shrink-0 ps-2"><span class="font-black text-amber-800">${c.qty}</span> <span class="text-stone-400">units</span></div>
+            <div class="text-end shrink-0 ps-2"><span class="font-black text-blue-700">${c.qty}</span> <span class="text-slate-400">units</span></div>
         </div>`).join('');
 }
 
@@ -1905,12 +2031,12 @@ function renderAdminAnalytics() {
             datasets: [{
                 label: 'Revenue (₪)',
                 data: trend.revenues,
-                borderColor: '#92400e',
-                backgroundColor: 'rgba(146, 64, 14, 0.12)',
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.12)',
                 fill: true,
                 tension: 0.35,
                 pointRadius: 3,
-                pointBackgroundColor: '#92400e'
+                pointBackgroundColor: '#2563eb'
             }]
         },
         options: { ...chartDefaults, scales: { y: { beginAtZero: true, ticks: { callback: v => '₪' + v } } } }
@@ -1923,7 +2049,7 @@ function renderAdminAnalytics() {
             datasets: [{
                 label: 'Orders',
                 data: trend.orders,
-                backgroundColor: 'rgba(120, 113, 108, 0.7)',
+                backgroundColor: 'rgba(37, 99, 235, 0.55)',
                 borderRadius: 4
             }]
         },
