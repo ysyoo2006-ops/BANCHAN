@@ -355,6 +355,10 @@
                                 <div><label class="block font-bold text-stone-700 mb-1">Price (₪) *</label><input type="number" id="menu-price" required min="1" class="w-full bg-white border border-stone-300 rounded-lg p-2.5"></div>
                                 <div><label class="block font-bold text-stone-700 mb-1">Portion/Unit Size *</label><input type="text" id="menu-unit" required placeholder="e.g. 500g, 1 Piece" class="w-full bg-white border border-stone-300 rounded-lg p-2.5"></div>
                             </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div><label class="block font-bold text-stone-700 mb-1">Stock (empty = unlimited)</label><input type="number" id="menu-stock" min="0" placeholder="Unlimited" class="w-full bg-white border border-stone-300 rounded-lg p-2.5"></div>
+                                <div><label class="block font-bold text-stone-700 mb-1">Minimum Order Qty *</label><input type="number" id="menu-min-qty" required min="1" value="1" class="w-full bg-white border border-stone-300 rounded-lg p-2.5"></div>
+                            </div>
                             <div class="md:col-span-2">
                                 <label class="block font-bold text-stone-700 mb-1">Photo Upload (Local File) *</label>
                                 <div class="flex items-center gap-4 bg-white border border-stone-300 rounded-lg p-3">
@@ -544,6 +548,11 @@ const ADMIN_CREDENTIALS = [
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 30000; // 30초
 
+// localStorage 키 (주문·메뉴는 탭/창 간 공유)
+const ORDERS_STORAGE_KEY = 'banchan_orders_jerusalem';
+const MENU_STORAGE_KEY = 'banchan_menu';
+const SPOTS_STORAGE_KEY = 'banchan_spots';
+
 // ================================================================
 // 데이터 & 상태
 // ================================================================
@@ -603,6 +612,9 @@ const LOCALIZATION = {
         toastOrderSaving:'Saving to records...', toastOrderSaved:'Order saved to Google Sheets!',
         toastOrderSaveError:'Order placed, but sheet sync failed. Email was sent.',
         toastStatusChanged:'Status Updated', toastStatusChangedDesc:'Order status transitioned successfully.',
+        toastMinQty:'Minimum order not met', toastMinQtyDesc:'{name} requires at least {min} units.',
+        toastOutOfStock:'Out of stock', toastOutOfStockDesc:'{name} has only {stock} left.',
+        menuMinOrderHint:'Min. {min}', menuOutOfStock:'Sold Out', menuStockLeft:'{n} left',
         recModalTitle:'Perfect Banchan Pairings',
         recModalSubtitle:'Based on your selection, our chefs recommend adding these traditional Korean pairings to enrich your dining table experience:',
         recBtnSkip:'No thanks, continue to checkout', recBtnDone:'Continue to Reservation',
@@ -648,6 +660,9 @@ const LOCALIZATION = {
         toastOrderSaving:'שומר לרשומות...', toastOrderSaved:'ההזמנה נשמרה ב-Google Sheets!',
         toastOrderSaveError:'ההזמנה בוצעה, אך הסנכרון עם Sheet נכשל. המייל נשלח.',
         toastStatusChanged:'הסטטוס עודכן', toastStatusChangedDesc:'סטטוס ההזמנה שונה בהצלחה.',
+        toastMinQty:'לא עומד במינימום הזמנה', toastMinQtyDesc:'{name} דורש לפחות {min} יחידות.',
+        toastOutOfStock:'אזל מהמלאי', toastOutOfStockDesc:'ל-{name} נשארו רק {stock} יחידות.',
+        menuMinOrderHint:'מינימום {min}', menuOutOfStock:'אזל', menuStockLeft:'נותרו {n}',
         recModalTitle:'שילובים מומלצים מושלמים',
         recModalSubtitle:'בהתבסס על המנות שבחרתם, השף שלנו ממליץ להוסיף את השילובים הקוריאניים המסורתיים האלה:',
         recBtnSkip:'לא תודה, המשך להזמנה', recBtnDone:'המשך לשריון איסוף',
@@ -721,36 +736,165 @@ async function saveOrderToSheets(order) {
 }
 
 // ================================================================
+// 저장소 헬퍼 (메뉴·주문·픽업 영속화 + 탭 간 동기화)
+// ================================================================
+function normalizeMenuItem(item, def) {
+    if (item.stock === undefined) item.stock = def?.stock ?? null;
+    if (item.minOrderQty === undefined) item.minOrderQty = def?.minOrderQty ?? 1;
+    item.minOrderQty = Math.max(1, parseInt(item.minOrderQty, 10) || 1);
+    if (item.stock !== null && item.stock !== undefined) item.stock = Math.max(0, parseInt(item.stock, 10));
+    return item;
+}
+
+function mergeMenuWithDefaults(savedItem) {
+    const def = DEFAULT_MENU_ITEMS.find(d => d.id === savedItem.id);
+    if (def) {
+        if (!savedItem.translations) savedItem.translations = { en:{}, he:{} };
+        ['en','he'].forEach(lang => {
+            if (!savedItem.translations[lang]) savedItem.translations[lang] = {};
+            if (!savedItem.translations[lang].name) savedItem.translations[lang].name = def.translations[lang].name;
+            if (!savedItem.translations[lang].description) savedItem.translations[lang].description = def.translations[lang].description;
+            if (savedItem.translations[lang].badge === undefined) savedItem.translations[lang].badge = def.translations[lang].badge;
+        });
+        savedItem.image = savedItem.image || def.image;
+        if (!savedItem.price) savedItem.price = def.price;
+        savedItem.unit = savedItem.unit || def.unit;
+    }
+    return normalizeMenuItem(savedItem, def);
+}
+
+function loadMenuItems() {
+    const savedMenu = JSON.parse(localStorage.getItem(MENU_STORAGE_KEY));
+    if (savedMenu && Array.isArray(savedMenu)) {
+        state.menuItems = savedMenu.map(mergeMenuWithDefaults);
+    } else {
+        state.menuItems = DEFAULT_MENU_ITEMS.map(it => normalizeMenuItem({ ...it }, it));
+    }
+}
+
+function saveMenuItems() {
+    localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(state.menuItems));
+}
+
+function syncCartWithMenu() {
+    state.cart.forEach(it => {
+        const latest = state.menuItems.find(m => m.id === it.product.id);
+        if (latest) it.product = latest;
+    });
+}
+
+function loadOrders() {
+    let saved = localStorage.getItem(ORDERS_STORAGE_KEY);
+    if (!saved) {
+        saved = sessionStorage.getItem(ORDERS_STORAGE_KEY);
+        if (saved) {
+            localStorage.setItem(ORDERS_STORAGE_KEY, saved);
+            sessionStorage.removeItem(ORDERS_STORAGE_KEY);
+        }
+    }
+    if (saved) state.orders = JSON.parse(saved);
+}
+
+function saveOrders() {
+    localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(state.orders));
+}
+
+function getMinOrderQty(product) {
+    return Math.max(1, product.minOrderQty || 1);
+}
+
+function isUnlimitedStock(product) {
+    return product.stock === null || product.stock === undefined;
+}
+
+function getCartQtyForProduct(productId) {
+    const inCart = state.cart.find(c => c.product.id === productId);
+    return inCart ? inCart.quantity : 0;
+}
+
+function getAvailableStock(product) {
+    if (isUnlimitedStock(product)) return Infinity;
+    return Math.max(0, product.stock - getCartQtyForProduct(product.id));
+}
+
+function isOutOfStock(product) {
+    return !isUnlimitedStock(product) && product.stock <= 0;
+}
+
+function formatMsg(key, vars) {
+    let msg = t(key);
+    Object.keys(vars).forEach(k => { msg = msg.replace(`{${k}}`, vars[k]); });
+    return msg;
+}
+
+function getProductName(product) {
+    return product.translations[state.language]?.name || product.translations.en.name;
+}
+
+function validateCartItemQuantity(product, totalQty) {
+    const minQ = getMinOrderQty(product);
+    if (totalQty > 0 && totalQty < minQ) {
+        return { ok: false, reason: 'min', min: minQ };
+    }
+    if (!isUnlimitedStock(product) && totalQty > product.stock) {
+        return { ok: false, reason: 'stock', stock: product.stock };
+    }
+    return { ok: true };
+}
+
+function validateEntireCart() {
+    for (const it of state.cart) {
+        const check = validateCartItemQuantity(it.product, it.quantity);
+        if (!check.ok) return { item: it, ...check };
+    }
+    return { ok: true };
+}
+
+function deductStockFromOrder(cart) {
+    cart.forEach(it => {
+        const menuItem = state.menuItems.find(m => m.id === it.product.id);
+        if (menuItem && !isUnlimitedStock(menuItem)) {
+            menuItem.stock = Math.max(0, menuItem.stock - it.quantity);
+        }
+    });
+    saveMenuItems();
+}
+
+function setupStorageSync() {
+    window.addEventListener('storage', (e) => {
+        if (e.key === ORDERS_STORAGE_KEY && e.newValue) {
+            state.orders = JSON.parse(e.newValue);
+            renderMyOrders();
+            if (state.isAdminAuthenticated && state.currentAdminTab === 'orders') renderAdminOrdersLog();
+        }
+        if (e.key === MENU_STORAGE_KEY && e.newValue) {
+            state.menuItems = JSON.parse(e.newValue).map(mergeMenuWithDefaults);
+            syncCartWithMenu();
+            renderMenu();
+            if (state.isAdminAuthenticated && state.currentAdminTab === 'menu') renderAdminMenuList();
+            updateCartUI();
+        }
+        if (e.key === SPOTS_STORAGE_KEY && e.newValue) {
+            state.pickupSpots = JSON.parse(e.newValue);
+            populateLocationSelect();
+            renderFooterLocations();
+            if (state.isAdminAuthenticated && state.currentAdminTab === 'spots') renderAdminSpotsList();
+        }
+    });
+}
+
+// ================================================================
 // INIT
 // ================================================================
 window.onload = function() {
-    const savedMenu = JSON.parse(localStorage.getItem('banchan_menu'));
-    if (savedMenu && Array.isArray(savedMenu)) {
-        state.menuItems = savedMenu.map(savedItem => {
-            const def = DEFAULT_MENU_ITEMS.find(d => d.id === savedItem.id);
-            if (def) {
-                if (!savedItem.translations) savedItem.translations = { en:{}, he:{} };
-                ['en','he'].forEach(lang => {
-                    if (!savedItem.translations[lang]) savedItem.translations[lang] = {};
-                    if (!savedItem.translations[lang].name) savedItem.translations[lang].name = def.translations[lang].name;
-                    if (!savedItem.translations[lang].description) savedItem.translations[lang].description = def.translations[lang].description;
-                    if (savedItem.translations[lang].badge === undefined) savedItem.translations[lang].badge = def.translations[lang].badge;
-                });
-                savedItem.image = savedItem.image || def.image;
-                savedItem.price = savedItem.price || def.price;
-                savedItem.unit = savedItem.unit || def.unit;
-            }
-            return savedItem;
-        });
-    } else {
-        state.menuItems = DEFAULT_MENU_ITEMS;
-    }
-    state.pickupSpots = JSON.parse(localStorage.getItem('banchan_spots')) || DEFAULT_PICKUP_SPOTS;
-    const savedOrders = sessionStorage.getItem('banchan_orders_jerusalem');
-    if (savedOrders) state.orders = JSON.parse(savedOrders);
+    loadMenuItems();
+    syncCartWithMenu();
+    state.pickupSpots = JSON.parse(localStorage.getItem(SPOTS_STORAGE_KEY)) || DEFAULT_PICKUP_SPOTS;
+    loadOrders();
     state.isAdminAuthenticated = sessionStorage.getItem('banchan_admin_auth') === 'true';
 
     window.addEventListener('hashchange', handleHashRouting);
+    setupStorageSync();
     handleHashRouting();
     setupDateLimits();
     setLanguage('en');
@@ -867,11 +1011,22 @@ function renderMenu() {
         const tr = it.translations[state.language]||it.translations['en'];
         const card = document.createElement('div');
         card.className = 'bg-white rounded-2xl border border-stone-200/80 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col group';
-        if (menuQtyHolders[it.id]===undefined) menuQtyHolders[it.id]=1;
-        const qty = menuQtyHolders[it.id];
+        const minQ = getMinOrderQty(it);
+        if (menuQtyHolders[it.id]===undefined) menuQtyHolders[it.id]=minQ;
+        const outOfStock = isOutOfStock(it);
+        const available = getAvailableStock(it);
+        const maxSelectable = isUnlimitedStock(it) ? 99 : Math.max(0, available);
+        menuQtyHolders[it.id] = Math.max(minQ, Math.min(menuQtyHolders[it.id], maxSelectable || minQ));
         const badge = tr.badge ? `<span class="absolute top-4 start-4 z-10 bg-amber-800 text-white font-bold text-[10px] px-2.5 py-1 rounded-lg uppercase tracking-wider">${tr.badge}</span>` : '';
+        const stockHint = outOfStock
+            ? `<span class="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-lg">${t('menuOutOfStock')}</span>`
+            : ((!isUnlimitedStock(it) && it.stock <= 5) ? `<span class="text-[10px] font-bold text-amber-800">${formatMsg('menuStockLeft',{n:it.stock})}</span>` : '')
+            + (minQ > 1 ? `<span class="text-[10px] font-bold text-stone-500">${formatMsg('menuMinOrderHint',{min:minQ})}</span>` : '');
+        const addBtn = outOfStock
+            ? `<button disabled class="flex-grow py-2.5 px-3.5 bg-stone-200 text-stone-400 font-bold text-xs rounded-xl cursor-not-allowed">${t('menuOutOfStock')}</button>`
+            : `<button onclick="addToCart('${it.id}')" class="flex-grow py-2.5 px-3.5 bg-stone-900 hover:bg-amber-800 text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-xs"><i class="fa-solid fa-cart-plus"></i><span>${state.language==='he'?'הוסף לסל':'Add to Basket'}</span></button>`;
         card.innerHTML = `
-            <div class="h-48 bg-stone-100 overflow-hidden relative">${badge}<img src="${it.image}" alt="${tr.name}" onerror="this.src='https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=600&auto=format&fit=crop'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"></div>
+            <div class="h-48 bg-stone-100 overflow-hidden relative">${badge}<img src="${it.image}" alt="${tr.name}" onerror="this.src='https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=600&auto=format&fit=crop'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500${outOfStock?' opacity-50':''}"></div>
             <div class="p-5 flex-grow flex flex-col justify-between">
                 <div>
                     <div class="flex items-start justify-between gap-2 mb-2">
@@ -879,19 +1034,18 @@ function renderMenu() {
                         <span class="text-amber-800 font-bold text-xl whitespace-nowrap">₪${it.price}</span>
                     </div>
                     <p class="text-stone-600 text-xs leading-relaxed line-clamp-3">${tr.description||'Homemade and delicious.'}</p>
-                    <div class="mt-3 mb-5 inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50/70 border border-amber-200/60 rounded-xl text-stone-800 text-[13px] font-extrabold tracking-wide">
+                    <div class="mt-3 mb-2 inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50/70 border border-amber-200/60 rounded-xl text-stone-800 text-[13px] font-extrabold tracking-wide">
                         <i class="fa-regular fa-circle-dot text-[10px] text-amber-900 animate-pulse"></i><span>${it.unit}</span>
                     </div>
+                    <div class="flex flex-wrap gap-1.5 mb-3">${stockHint}</div>
                 </div>
                 <div class="pt-4 border-t border-stone-100 flex items-center justify-between gap-3">
-                    <div class="flex items-center border border-stone-200 bg-white rounded-lg overflow-hidden">
+                    <div class="flex items-center border border-stone-200 bg-white rounded-lg overflow-hidden${outOfStock?' opacity-40 pointer-events-none':''}">
                         <button onclick="adjustLocalQty('${it.id}',-1)" class="px-2.5 py-1 text-stone-500 hover:bg-stone-100 transition-colors"><i class="fa-solid fa-minus text-[10px]"></i></button>
-                        <span id="qty-holder-${it.id}" class="px-2 text-sm font-bold text-stone-800 w-8 text-center">${qty}</span>
+                        <span id="qty-holder-${it.id}" class="px-2 text-sm font-bold text-stone-800 w-8 text-center">${menuQtyHolders[it.id]}</span>
                         <button onclick="adjustLocalQty('${it.id}',1)" class="px-2.5 py-1 text-stone-500 hover:bg-stone-100 transition-colors"><i class="fa-solid fa-plus text-[10px]"></i></button>
                     </div>
-                    <button onclick="addToCart('${it.id}')" class="flex-grow py-2.5 px-3.5 bg-stone-900 hover:bg-amber-800 text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-xs">
-                        <i class="fa-solid fa-cart-plus"></i><span>${state.language==='he'?'הוסף לסל':'Add to Basket'}</span>
-                    </button>
+                    ${addBtn}
                 </div>
             </div>`;
         grid.appendChild(card);
@@ -899,9 +1053,22 @@ function renderMenu() {
 }
 
 function adjustLocalQty(id, offset) {
-    if (!menuQtyHolders[id]) menuQtyHolders[id]=1;
-    menuQtyHolders[id] = Math.max(1, menuQtyHolders[id]+offset);
-    const el = document.getElementById(`qty-holder-${id}`); if(el) el.innerText=menuQtyHolders[id];
+    const product = state.menuItems.find(it => it.id === id);
+    if (!product) return;
+    const minQ = getMinOrderQty(product);
+    if (!menuQtyHolders[id]) menuQtyHolders[id] = minQ;
+    const available = getAvailableStock(product);
+    const maxQ = isUnlimitedStock(product) ? 99 : Math.max(minQ, available);
+    let next = menuQtyHolders[id] + offset;
+    if (offset > 0 && next > maxQ) {
+        if (!isUnlimitedStock(product)) {
+            showToast(t('toastOutOfStock'), formatMsg('toastOutOfStockDesc', { name: getProductName(product), stock: product.stock }), true);
+        }
+        next = maxQ;
+    }
+    menuQtyHolders[id] = Math.max(minQ, next);
+    const el = document.getElementById(`qty-holder-${id}`);
+    if (el) el.innerText = menuQtyHolders[id];
 }
 
 function renderFooterLocations() {
@@ -927,21 +1094,49 @@ function toggleCart() {
 }
 
 function addToCart(itemId) {
-    const product = state.menuItems.find(it=>it.id===itemId); if(!product) return;
-    const quantity = menuQtyHolders[itemId]||1;
+    const product = state.menuItems.find(it=>it.id===itemId);
+    if (!product || isOutOfStock(product)) return;
+    const minQ = getMinOrderQty(product);
+    const quantity = menuQtyHolders[itemId] || minQ;
     const existing = state.cart.find(it=>it.product.id===itemId);
-    if (existing) existing.quantity+=quantity; else state.cart.push({product,quantity});
-    menuQtyHolders[itemId]=1;
-    const disp = document.getElementById(`qty-holder-${itemId}`); if(disp) disp.innerText=1;
+    const newTotal = (existing ? existing.quantity : 0) + quantity;
+    const check = validateCartItemQuantity(product, newTotal);
+    if (!check.ok) {
+        if (check.reason === 'min') {
+            showToast(t('toastMinQty'), formatMsg('toastMinQtyDesc', { name: getProductName(product), min: check.min }), true);
+        } else {
+            showToast(t('toastOutOfStock'), formatMsg('toastOutOfStockDesc', { name: getProductName(product), stock: check.stock }), true);
+        }
+        return;
+    }
+    if (existing) existing.quantity = newTotal;
+    else state.cart.push({ product, quantity: newTotal });
+    menuQtyHolders[itemId] = minQ;
+    const disp = document.getElementById(`qty-holder-${itemId}`);
+    if (disp) disp.innerText = minQ;
     updateCartUI();
-    const name = product.translations[state.language]?.name||product.translations['en'].name;
-    showToast(t('toastAdded'),`<strong>${name}</strong> (${quantity}) ${t('toastAddedDesc')}`);
+    showToast(t('toastAdded'), `<strong>${getProductName(product)}</strong> (${quantity}) ${t('toastAddedDesc')}`);
 }
 
 function adjustCartQty(itemId, dir) {
-    const item = state.cart.find(it=>it.product.id===itemId); if(!item) return;
-    item.quantity+=dir;
-    if (item.quantity<=0) state.cart=state.cart.filter(it=>it.product.id!==itemId);
+    const item = state.cart.find(it=>it.product.id===itemId);
+    if (!item) return;
+    const menuItem = state.menuItems.find(m => m.id === itemId) || item.product;
+    const newQty = item.quantity + dir;
+    if (newQty <= 0) {
+        state.cart = state.cart.filter(it=>it.product.id!==itemId);
+        updateCartUI();
+        return;
+    }
+    const check = validateCartItemQuantity(menuItem, newQty);
+    if (!check.ok) {
+        if (check.reason === 'stock') {
+            showToast(t('toastOutOfStock'), formatMsg('toastOutOfStockDesc', { name: getProductName(menuItem), stock: check.stock }), true);
+        }
+        return;
+    }
+    item.quantity = newQty;
+    item.product = menuItem;
     updateCartUI();
 }
 
@@ -973,6 +1168,16 @@ function updateCartUI() {
 
 function goToCheckout() {
     if (state.cart.length===0) { showToast(t('toastCartEmpty'),t('toastCartEmptyDesc'),true); return; }
+    const cartCheck = validateEntireCart();
+    if (!cartCheck.ok) {
+        const p = cartCheck.item.product;
+        if (cartCheck.reason === 'min') {
+            showToast(t('toastMinQty'), formatMsg('toastMinQtyDesc', { name: getProductName(p), min: cartCheck.min }), true);
+        } else {
+            showToast(t('toastOutOfStock'), formatMsg('toastOutOfStockDesc', { name: getProductName(p), stock: cartCheck.stock }), true);
+        }
+        return;
+    }
     toggleCart();
     openRecommendationModal();
 }
@@ -987,7 +1192,10 @@ function openRecommendationModal() {
     else if (cats.has('main')&&!cats.has('kimchi')) targets=['item-kimchi-1','item-side-1'];
     else if (cats.has('soup')&&!cats.has('side')) targets=['item-side-2','item-side-3'];
     else targets=['item-side-1','item-main-2','item-side-2'];
-    targets=targets.filter(id=>!state.cart.some(ci=>ci.product.id===id)).slice(0,3);
+    targets=targets.filter(id=>{
+        const p=state.menuItems.find(it=>it.id===id);
+        return p && !isOutOfStock(p) && !state.cart.some(ci=>ci.product.id===id);
+    }).slice(0,3);
     if (targets.length===0) { navigateTo('checkout'); return; }
     document.getElementById('page-menu')?.classList.add('hidden');
     targets.forEach(tid=>{
@@ -1003,12 +1211,12 @@ function openRecommendationModal() {
 }
 
 function addRecommendationToCart(itemId) {
-    const product=state.menuItems.find(it=>it.id===itemId); if(!product) return;
-    state.cart.push({product,quantity:1}); updateCartUI();
+    const product=state.menuItems.find(it=>it.id===itemId); if(!product || isOutOfStock(product)) return;
+    menuQtyHolders[itemId] = getMinOrderQty(product);
+    addToCart(itemId);
+    if (!state.cart.some(c => c.product.id === itemId)) return;
     const btn=document.getElementById(`rec-add-btn-${itemId}`);
     if(btn){ btn.className='px-3.5 py-2 bg-emerald-100 text-emerald-800 font-bold text-[10px] rounded-xl cursor-default flex items-center gap-1 shrink-0'; btn.disabled=true; btn.onclick=null; btn.innerHTML=`<i class="fa-solid fa-circle-check"></i> <span>${t('recAddedBadge')}</span>`; }
-    const name=product.translations[state.language]?.name||product.translations['en'].name;
-    showToast(t('toastAdded'),`<strong>${name}</strong> ${t('toastAddedDesc')}`);
 }
 
 function closeRecommendationModal(go) {
@@ -1068,6 +1276,16 @@ function renderCheckoutSummary() {
 async function handlePlaceOrder(event) {
     event.preventDefault();
     const submitBtn = document.getElementById('checkout-btn-submit');
+    const cartCheck = validateEntireCart();
+    if (!cartCheck.ok) {
+        const p = cartCheck.item.product;
+        if (cartCheck.reason === 'min') {
+            showToast(t('toastMinQty'), formatMsg('toastMinQtyDesc', { name: getProductName(p), min: cartCheck.min }), true);
+        } else {
+            showToast(t('toastOutOfStock'), formatMsg('toastOutOfStockDesc', { name: getProductName(p), stock: cartCheck.stock }), true);
+        }
+        return;
+    }
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Processing...</span>';
 
@@ -1110,9 +1328,10 @@ async function handlePlaceOrder(event) {
     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_CUSTOMER_TEMPLATE, emailParams).catch(e=>console.error('Customer email error:',e));
     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_ADMIN_TEMPLATE, emailParams).catch(e=>console.error('Admin email error:',e));
 
-    // 3. 로컬 상태 저장
+    // 3. 로컬 상태 저장 (localStorage — 탭/창 간 공유, 재접속 시 유지)
+    deductStockFromOrder(state.cart);
     state.orders.unshift(newOrder);
-    sessionStorage.setItem('banchan_orders_jerusalem', JSON.stringify(state.orders));
+    saveOrders();
     state.cart=[]; document.getElementById('disposable-utensils').checked=false;
     updateCartUI(); document.getElementById('order-form').reset(); updatePickupTimeOptions('');
 
@@ -1154,7 +1373,7 @@ function simulateOrderStatusChange(orderId) {
     const idx=state.orders.findIndex(o=>o.id===orderId); if(idx===-1) return;
     const curr=state.orders[idx].status;
     state.orders[idx].status=curr==='cooking'?'waiting':curr==='waiting'?'delivered':'cooking';
-    sessionStorage.setItem('banchan_orders_jerusalem',JSON.stringify(state.orders));
+    saveOrders();
     renderMyOrders(); renderAdminOrdersLog();
     showToast(t('toastStatusChanged'),t('toastStatusChangedDesc'));
 }
@@ -1274,8 +1493,10 @@ function switchAdminTab(subtabId) {
 function renderAdminMenuList() {
     const c=document.getElementById('admin-menu-list'); if(!c) return; c.innerHTML='';
     state.menuItems.forEach(it=>{
+        const stockLabel = isUnlimitedStock(it) ? 'Stock: ∞' : `Stock: ${it.stock}`;
+        const minLabel = `Min: ${getMinOrderQty(it)}`;
         const card=document.createElement('div'); card.className='bg-white p-4 rounded-2xl border border-stone-200 flex gap-4 items-center justify-between';
-        card.innerHTML=`<div class="flex items-center gap-3"><img src="${it.image}" onerror="this.src='https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=600&auto=format&fit=crop'" class="w-12 h-12 object-cover rounded-xl border"><div><h4 class="font-black text-stone-900 text-sm">${it.translations.en.name} <span class="text-stone-400 font-normal">(${it.unit})</span></h4><p class="text-xs text-amber-800 font-bold">₪${it.price} · <span class="text-stone-500 uppercase font-semibold text-[10px]">${it.category}</span></p></div></div><div class="flex items-center gap-2"><button onclick="openEditMenuModal('${it.id}')" class="p-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs transition-colors"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteMenuItem('${it.id}')" class="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs transition-colors"><i class="fa-solid fa-trash-can"></i></button></div>`;
+        card.innerHTML=`<div class="flex items-center gap-3"><img src="${it.image}" onerror="this.src='https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=600&auto=format&fit=crop'" class="w-12 h-12 object-cover rounded-xl border"><div><h4 class="font-black text-stone-900 text-sm">${it.translations.en.name} <span class="text-stone-400 font-normal">(${it.unit})</span></h4><p class="text-xs text-amber-800 font-bold">₪${it.price} · <span class="text-stone-500 uppercase font-semibold text-[10px]">${it.category}</span></p><p class="text-[10px] text-stone-500 mt-0.5">${stockLabel} · ${minLabel}</p></div></div><div class="flex items-center gap-2"><button onclick="openEditMenuModal('${it.id}')" class="p-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs transition-colors"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteMenuItem('${it.id}')" class="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs transition-colors"><i class="fa-solid fa-trash-can"></i></button></div>`;
         c.appendChild(card);
     });
 }
@@ -1293,6 +1514,7 @@ function openAddMenuModal() {
     document.getElementById('edit-item-id').value='';
     ['menu-name-en','menu-name-he','menu-desc-en','menu-desc-he','menu-badge-en','menu-badge-he'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('menu-category').value='kimchi'; document.getElementById('menu-price').value=''; document.getElementById('menu-unit').value='';
+    document.getElementById('menu-stock').value=''; document.getElementById('menu-min-qty').value='1';
     document.getElementById('menu-file-input').value=''; document.getElementById('upload-hint').innerText='Drag & drop or click to choose a picture'; document.getElementById('upload-filename').innerText=''; document.getElementById('menu-image-preview').src=''; state.temporaryUploadedImageBase64='';
     modal.classList.remove('hidden'); modal.scrollIntoView({behavior:'smooth'});
 }
@@ -1303,6 +1525,8 @@ function openEditMenuModal(id) {
     document.getElementById('menu-name-en').value=it.translations.en.name; document.getElementById('menu-name-he').value=it.translations.he?.name||'';
     document.getElementById('menu-desc-en').value=it.translations.en.description; document.getElementById('menu-desc-he').value=it.translations.he?.description||'';
     document.getElementById('menu-category').value=it.category; document.getElementById('menu-price').value=it.price; document.getElementById('menu-unit').value=it.unit;
+    document.getElementById('menu-stock').value=isUnlimitedStock(it)?'':it.stock;
+    document.getElementById('menu-min-qty').value=getMinOrderQty(it);
     document.getElementById('menu-badge-en').value=it.translations.en.badge||''; document.getElementById('menu-badge-he').value=it.translations.he?.badge||'';
     document.getElementById('menu-file-input').value=''; document.getElementById('upload-hint').innerText='Replace current picture with a new file if needed'; document.getElementById('upload-filename').innerText='Using current saved image'; document.getElementById('menu-image-preview').src=it.image; state.temporaryUploadedImageBase64=it.image;
     modal.classList.remove('hidden'); modal.scrollIntoView({behavior:'smooth'});
@@ -1313,16 +1537,19 @@ function closeAddMenuModal() { document.getElementById('menu-item-modal').classL
 function handleSaveMenuItem(e) {
     e.preventDefault();
     const editId=document.getElementById('edit-item-id').value;
-    const payload={ id:editId||'item-'+Date.now(), category:document.getElementById('menu-category').value, price:parseFloat(document.getElementById('menu-price').value), unit:document.getElementById('menu-unit').value, image:state.temporaryUploadedImageBase64||'https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=600&auto=format&fit=crop', translations:{ en:{name:document.getElementById('menu-name-en').value, description:document.getElementById('menu-desc-en').value, badge:document.getElementById('menu-badge-en').value}, he:{name:document.getElementById('menu-name-he').value, description:document.getElementById('menu-desc-he').value, badge:document.getElementById('menu-badge-he').value} } };
+    const stockVal=document.getElementById('menu-stock').value.trim();
+    const stock=stockVal===''?null:Math.max(0,parseInt(stockVal,10));
+    const minOrderQty=Math.max(1,parseInt(document.getElementById('menu-min-qty').value,10)||1);
+    const payload={ id:editId||'item-'+Date.now(), category:document.getElementById('menu-category').value, price:parseFloat(document.getElementById('menu-price').value), unit:document.getElementById('menu-unit').value, stock, minOrderQty, image:state.temporaryUploadedImageBase64||'https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=600&auto=format&fit=crop', translations:{ en:{name:document.getElementById('menu-name-en').value, description:document.getElementById('menu-desc-en').value, badge:document.getElementById('menu-badge-en').value}, he:{name:document.getElementById('menu-name-he').value, description:document.getElementById('menu-desc-he').value, badge:document.getElementById('menu-badge-he').value} } };
     if(editId){ const idx=state.menuItems.findIndex(it=>it.id===editId); if(idx!==-1) state.menuItems[idx]=payload; }
     else state.menuItems.push(payload);
-    localStorage.setItem('banchan_menu',JSON.stringify(state.menuItems));
+    saveMenuItems();
     closeAddMenuModal(); renderAdminMenuList(); renderMenu();
     showToast('Catalog Sync Successful','Menu updates written and loaded successfully.');
 }
 
 function deleteMenuItem(id) {
-    if(confirm('Are you sure you want to delete this menu item?')){ state.menuItems=state.menuItems.filter(it=>it.id!==id); localStorage.setItem('banchan_menu',JSON.stringify(state.menuItems)); renderAdminMenuList(); renderMenu(); showToast('Offering Removed','The item was deleted from catalog offerings.'); }
+    if(confirm('Are you sure you want to delete this menu item?')){ state.menuItems=state.menuItems.filter(it=>it.id!==id); saveMenuItems(); renderAdminMenuList(); renderMenu(); showToast('Offering Removed','The item was deleted from catalog offerings.'); }
 }
 
 function renderAdminSpotsList() {
@@ -1343,7 +1570,7 @@ function saveAdminSpotSettings(spotId) {
     if(!state.pickupSpots[idx].translations.he) state.pickupSpots[idx].translations.he={};
     state.pickupSpots[idx].translations.he.time=document.getElementById(`spot-time-he-${spotId}`).value;
     state.pickupSpots[idx].times=document.getElementById(`spot-slots-${spotId}`).value.split(',').map(s=>s.trim()).filter(Boolean);
-    localStorage.setItem('banchan_spots',JSON.stringify(state.pickupSpots));
+    localStorage.setItem(SPOTS_STORAGE_KEY,JSON.stringify(state.pickupSpots));
     populateLocationSelect(); renderAdminSpotsList();
     showToast('Pickup Spot Updated',`Changes for ${state.pickupSpots[idx].translations.en.name} saved.`);
 }
@@ -1368,13 +1595,13 @@ function renderAdminOrdersLog() {
 function updateAdminOrderStatus(id, newStatus) {
     const idx=state.orders.findIndex(o=>o.id===id); if(idx===-1) return;
     state.orders[idx].status=newStatus;
-    sessionStorage.setItem('banchan_orders_jerusalem',JSON.stringify(state.orders));
+    saveOrders();
     renderAdminOrdersLog(); renderMyOrders();
     showToast('Status Updated',`Order ${id} status changed to ${newStatus}.`);
 }
 
 function clearSimulatedOrders() {
-    if(confirm('Clear all orders? This resets the customer dashboard.')){ state.orders=[]; sessionStorage.removeItem('banchan_orders_jerusalem'); renderAdminOrdersLog(); renderMyOrders(); showToast('Log Cleared','All orders wiped.'); }
+    if(confirm('Clear all orders? This resets the customer dashboard.')){ state.orders=[]; localStorage.removeItem(ORDERS_STORAGE_KEY); renderAdminOrdersLog(); renderMyOrders(); showToast('Log Cleared','All orders wiped.'); }
 }
 </script>
 </body>
