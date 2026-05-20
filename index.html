@@ -1113,6 +1113,31 @@ function setupSupabaseRealtime() {
         .subscribe();
 }
 
+function setupMobileSyncHandlers() {
+    // 1. 탭 다시 포커스될 때 즉시 pull (모바일에서 앱 전환 후 돌아올 때)
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+            pullFromCloud(false);
+        }
+    });
+
+    // 2. 네트워크 재연결 시 즉시 pull (모바일 와이파이 전환 등)
+    window.addEventListener('online', function() {
+        pullFromCloud(true);
+        // Realtime 재연결
+        setupSupabaseRealtime();
+    });
+
+    // 3. 모바일에서 polling 간격을 더 짧게 (5초)
+    //    기존 CLOUD_POLL_INTERVAL_MS(8000)보다 빠르게
+    if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+        if (cloudPollTimer) clearInterval(cloudPollTimer);
+        cloudPollTimer = setInterval(function() {
+            pullFromCloud(false);
+        }, 5000);
+    }
+}
+
 async function initCloudSync() {
     if (!isCloudSyncEnabled()) {
         updateCloudSyncBadge(false);
@@ -1124,6 +1149,7 @@ async function initCloudSync() {
         await seedCloudIfEmpty();
         startCloudPolling();
         setupSupabaseRealtime();
+        setupMobileSyncHandlers(); // 모바일 대응 추가
     }
 }
 
@@ -1652,9 +1678,7 @@ function closeRecommendationModal(go) {
 }
 
 function setupDateLimits() {
-    const input=document.getElementById('pickup-date'); if(!input) return;
-    const tom=new Date(); tom.setDate(tom.getDate()+1);
-    input.min=`${tom.getFullYear()}-${String(tom.getMonth()+1).padStart(2,'0')}-${String(tom.getDate()).padStart(2,'0')}`;
+    // 날짜 제한은 updatePickupTimeOptions()에서 스팟 선택 시 동적으로 처리
 }
 
 function populateLocationSelect() {
@@ -1666,17 +1690,90 @@ function populateLocationSelect() {
         opt.innerText=spot.translations[state.language]?.name||spot.translations['en'].name;
         if(spot.id===prev) opt.selected=true; select.appendChild(opt);
     });
+    // 스팟이 바뀌면 날짜도 초기화
+    const dateInput = document.getElementById('pickup-date');
+    if (dateInput) dateInput.value = '';
     updatePickupTimeOptions(select.value);
 }
 
 function updatePickupTimeOptions(spotId) {
-    const ts=document.getElementById('pickup-time'); if(!ts) return;
-    const helper=document.getElementById('pickup-location-tip'); ts.innerHTML='';
-    const spot=state.pickupSpots.find(s=>s.id===spotId);
-    if(!spot){ ts.innerHTML=`<option value="" disabled selected>${t('timeSelectPlaceholder')}</option>`; helper.classList.add('hidden'); return; }
-    const tr=spot.translations[state.language]||spot.translations['en'];
-    helper.innerHTML=`<i class="fa-solid fa-map-location-dot mr-1.5 rtl:ml-1.5 text-amber-800"></i> ${tr.spot} (${tr.time})`; helper.classList.remove('hidden');
-    spot.times.forEach(tv=>{ const opt=document.createElement('option'); opt.value=tv; opt.innerText=tv; ts.appendChild(opt); });
+    const ts = document.getElementById('pickup-time');
+    const helper = document.getElementById('pickup-location-tip');
+    const dateInput = document.getElementById('pickup-date');
+    if (!ts) return;
+    ts.innerHTML = '';
+
+    const spot = state.pickupSpots.find(s => s.id === spotId);
+    if (!spot) {
+        ts.innerHTML = `<option value="" disabled selected>${t('timeSelectPlaceholder')}</option>`;
+        if (helper) helper.classList.add('hidden');
+        if (dateInput) {
+            dateInput.value = '';
+            dateInput.removeAttribute('min');
+            dateInput.removeAttribute('max');
+            // 날짜 제한 초기화
+            dateInput.onchange = null;
+        }
+        return;
+    }
+
+    const tr = spot.translations[state.language] || spot.translations['en'];
+    if (helper) {
+        helper.innerHTML = `<i class="fa-solid fa-map-location-dot mr-1.5 rtl:ml-1.5 text-amber-800"></i> ${tr.spot} (${tr.time})`;
+        helper.classList.remove('hidden');
+    }
+
+    // 스팟에 설정된 허용 요일 (days 배열)
+    // days가 없으면 기존 DEFAULT_PICKUP_SPOTS처럼 화/금만 허용
+    const allowedDays = (spot.days && spot.days.length > 0)
+        ? spot.days.map(d => ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].indexOf(d))
+        : [2, 5]; // 기본값: 화요일(2), 금요일(5)
+
+    // 날짜 input 제한 적용
+    if (dateInput) {
+        dateInput.value = '';
+        applyDateRestrictions(dateInput, allowedDays);
+    }
+
+    // 시간 슬롯
+    spot.times.forEach(tv => {
+        const opt = document.createElement('option');
+        opt.value = tv; opt.innerText = tv;
+        ts.appendChild(opt);
+    });
+}
+
+function applyDateRestrictions(dateInput, allowedDayIndices) {
+    // min: 내일부터
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    dateInput.min = fmt(tomorrow);
+
+    // 날짜 변경 시 허용 요일인지 검사
+    dateInput.onchange = function() {
+        if (!this.value) return;
+        const selected = new Date(this.value + 'T12:00:00');
+        const dow = selected.getDay(); // 0=일, 1=월, ..., 6=토
+        if (!allowedDayIndices.includes(dow)) {
+            // 허용 요일 이름 구성
+            const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            const allowedNames = allowedDayIndices.map(i => dayNames[i]).join(', ');
+            showToast(
+                'Invalid Pickup Date',
+                `This spot only accepts pickups on: <strong>${allowedNames}</strong>. Please choose a valid date.`,
+                true
+            );
+            this.value = '';
+        }
+    };
+
+    // placeholder 힌트 업데이트
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const allowedShort = allowedDayIndices.map(i => dayNames[i]).join(' / ');
+    const noteEl = document.getElementById('checkout-date-note');
+    if (noteEl) noteEl.innerHTML = `* Available pickup days for this spot: <strong class="text-amber-800">${allowedShort}</strong>`;
 }
 
 function renderCheckoutSummary() {
