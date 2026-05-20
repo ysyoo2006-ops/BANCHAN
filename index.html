@@ -286,24 +286,62 @@
         </section>
 
         <!-- MY ORDERS -->
-        <section id="page-my-orders" class="page-section hidden max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-            <div class="text-center max-w-2xl mx-auto mb-10">
-                <h2 class="text-3xl font-black text-stone-900" id="orders-main-title">Reservation Tracking</h2>
-                <p class="text-stone-600 text-sm mt-2" id="orders-sub-title">View and manage your scheduled Banchan pickups in Jerusalem.</p>
-                <div class="w-12 h-1 bg-amber-800 mx-auto mt-4 rounded-full"></div>
+       <section id="page-my-orders" class="page-section hidden max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- 이메일 인증 게이트 -->
+    <div id="orders-auth-gate" class="max-w-md mx-auto bg-white rounded-3xl border border-stone-200 shadow-xl p-8 text-center">
+        <div class="w-14 h-14 bg-amber-100 text-amber-900 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <i class="fa-solid fa-envelope text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-black text-stone-900 mb-2" id="orders-gate-title">View Your Orders</h3>
+        <p class="text-stone-500 text-xs mb-6 font-semibold" id="orders-gate-desc">Enter the email address you used when placing your order.</p>
+        <div class="space-y-3">
+            <input type="email" id="orders-email-input" placeholder="yourname@domain.com"
+                class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-center text-sm focus:outline-none focus:ring-2 focus:ring-amber-800/20 focus:border-amber-800 transition-all">
+            <button onclick="handleOrdersEmailLookup()"
+                class="w-full py-3.5 bg-stone-950 hover:bg-amber-800 text-white font-bold text-sm rounded-xl transition-all">
+                View My Orders
+            </button>
+        </div>
+        <p id="orders-gate-error" class="hidden mt-3 text-xs text-red-600 font-semibold bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+            No orders found for this email address.
+        </p>
+    </div>
+
+    <!-- 인증 후 주문 목록 -->
+    <div id="orders-authenticated-view" class="hidden">
+        <div class="text-center max-w-2xl mx-auto mb-10">
+            <h2 class="text-3xl font-black text-stone-900" id="orders-main-title">Reservation Tracking</h2>
+            <p class="text-stone-600 text-sm mt-2" id="orders-sub-title">View and manage your scheduled Banchan pickups in Jerusalem.</p>
+            <div class="w-12 h-1 bg-amber-800 mx-auto mt-4 rounded-full"></div>
+        </div>
+
+        <!-- 현재 조회 중인 이메일 + 로그아웃 -->
+        <div class="flex items-center justify-between bg-amber-50 border border-amber-200/60 rounded-2xl px-5 py-3 mb-6">
+            <div class="flex items-center gap-2 text-xs">
+                <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                <span class="text-stone-500">Showing orders for</span>
+                <strong class="text-stone-900" id="orders-current-email"></strong>
             </div>
-            <div id="no-orders-view" class="bg-white rounded-3xl p-12 text-center border border-stone-200 shadow-xs">
-                <div class="w-16 h-16 bg-stone-50 text-stone-400 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-stone-100">
-                    <i class="fa-regular fa-folder-open text-3xl text-amber-800"></i>
-                </div>
-                <h3 class="text-lg font-bold text-stone-800" id="orders-empty-title">No Reservations Found</h3>
-                <p class="text-stone-500 text-sm mt-2 max-w-sm mx-auto" id="orders-empty-desc">Your active and historical Korean Banchan reservations will appear here once submitted.</p>
-                <button onclick="navigateTo('menu')" class="mt-6 px-6 py-3.5 bg-amber-800 hover:bg-amber-900 text-white font-bold text-sm rounded-xl transition-all inline-flex items-center gap-2" id="orders-empty-btn">
-                    <i class="fa-solid fa-basket-shopping"></i><span>Order Banchan Now</span>
-                </button>
+            <button onclick="handleOrdersLogout()" class="text-xs font-bold text-stone-400 hover:text-red-600 transition-colors flex items-center gap-1">
+                <i class="fa-solid fa-arrow-right-from-bracket text-[10px]"></i> Sign out
+            </button>
+        </div>
+
+        <div id="no-orders-view" class="bg-white rounded-3xl p-12 text-center border border-stone-200 shadow-xs">
+            <div class="w-16 h-16 bg-stone-50 text-stone-400 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-stone-100">
+                <i class="fa-regular fa-folder-open text-3xl text-amber-800"></i>
             </div>
-            <div id="orders-list-view" class="space-y-8 hidden"></div>
-        </section>
+            <h3 class="text-lg font-bold text-stone-800" id="orders-empty-title">No Reservations Found</h3>
+            <p class="text-stone-500 text-sm mt-2 max-w-sm mx-auto" id="orders-empty-desc">Your active and historical Korean Banchan reservations will appear here once submitted.</p>
+            <button onclick="navigateTo('menu')" class="mt-6 px-6 py-3.5 bg-amber-800 hover:bg-amber-900 text-white font-bold text-sm rounded-xl transition-all inline-flex items-center gap-2" id="orders-empty-btn">
+                <i class="fa-solid fa-basket-shopping"></i><span>Order Banchan Now</span>
+            </button>
+        </div>
+        <div id="orders-list-view" class="space-y-8 hidden"></div>
+    </div>
+
+</section>
 
         <!-- ADMIN -->
         <section id="page-admin" class="page-section hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -1590,25 +1628,83 @@ function adjustCartQty(itemId, dir) {
     item.product = menuItem;
     updateCartUI();
 }
-
 function updateCartUI() {
     const c = document.getElementById('cart-items-container');
     const badge = document.getElementById('cart-badge');
-    if (!c) return; c.innerHTML='';
-    let totalItems=0, subtotal=0;
-    if (state.cart.length===0) {
-        c.innerHTML=`<div class="flex flex-col items-center justify-center py-20 text-center text-stone-400"><i class="fa-solid fa-basket-shopping text-5xl mb-4 text-stone-300"></i><p class="text-sm font-bold text-stone-600">${state.language==='he'?'סל הקניות שלך ריק':'Your Basket is Empty'}</p><p class="text-xs mt-1 max-w-[200px] text-stone-400">${state.language==='he'?'הוסיפו מנות מהתפריט!':'Add delicious handcrafted meals to get started!'}</p></div>`;
-        document.getElementById('cart-checkout-btn').disabled=true;
+    if (!c) return;
+    c.innerHTML = '';
+    let totalItems = 0, subtotal = 0;
+
+    if (state.cart.length === 0) {
+        c.innerHTML = `<div class="flex flex-col items-center justify-center py-20 text-center text-stone-400"><i class="fa-solid fa-basket-shopping text-5xl mb-4 text-stone-300"></i><p class="text-sm font-bold text-stone-600">${state.language==='he'?'סל הקניות שלך ריק':'Your Basket is Empty'}</p><p class="text-xs mt-1 max-w-[200px] text-stone-400">${state.language==='he'?'הוסיפו מנות מהתפריט!':'Add delicious handcrafted meals to get started!'}</p></div>`;
+        document.getElementById('cart-checkout-btn').disabled = true;
         document.getElementById('cart-checkout-btn').classList.add('opacity-40','cursor-not-allowed');
+
+        // 최소 금액 배너 숨기기
+        const minBanner = document.getElementById('cart-min-order-banner');
+        if (minBanner) minBanner.classList.add('hidden');
+
     } else {
-        const subtotal = state.cart.reduce((s,it) => s + it.product.price * it.quantity, 0);
-const minMet = subtotal >= MINIMUM_ORDER_AMOUNT;
-const checkoutBtn = document.getElementById('cart-checkout-btn');
-checkoutBtn.disabled = !minMet;
-if (minMet) {
-    checkoutBtn.classList.remove('opacity-40','cursor-not-allowed');
-} else {
-    checkoutBtn.classList.add('opacity-40','cursor-not-allowed');
+        // 아이템 렌더링
+        state.cart.forEach(it => {
+            totalItems += it.quantity;
+            const p = it.product.price * it.quantity;
+            subtotal += p;
+            const name = it.product.translations[state.language]?.name || it.product.translations['en'].name;
+            const row = document.createElement('div');
+            row.className = 'bg-stone-50 p-4 rounded-xl border border-stone-200/50 flex gap-4 items-start';
+            row.innerHTML = `<img src="${it.product.image}" onerror="this.src='https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=600&auto=format&fit=crop'" class="w-14 h-14 rounded-lg object-cover border border-stone-200">
+            <div class="flex-grow">
+                <h4 class="font-bold text-stone-900 text-xs line-clamp-1">${name}</h4>
+                <p class="text-[10px] text-stone-400 mb-2">${it.product.unit} · ₪${it.product.price}</p>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center border border-stone-200 bg-white rounded-lg overflow-hidden">
+                        <button onclick="adjustCartQty('${it.product.id}',-1)" class="px-2 py-1 text-stone-500 hover:bg-stone-100 transition-colors"><i class="fa-solid fa-minus text-[9px]"></i></button>
+                        <span class="px-2 text-xs font-black text-stone-800 w-6 text-center">${it.quantity}</span>
+                        <button onclick="adjustCartQty('${it.product.id}',1)" class="px-2 py-1 text-stone-500 hover:bg-stone-100 transition-colors"><i class="fa-solid fa-plus text-[9px]"></i></button>
+                    </div>
+                    <span class="font-black text-stone-900 text-xs">₪${p}</span>
+                </div>
+            </div>`;
+            c.appendChild(row);
+        });
+
+        // 최소 금액 체크
+        const minMet = subtotal >= MINIMUM_ORDER_AMOUNT;
+        const checkoutBtn = document.getElementById('cart-checkout-btn');
+        checkoutBtn.disabled = !minMet;
+        if (minMet) {
+            checkoutBtn.classList.remove('opacity-40','cursor-not-allowed');
+        } else {
+            checkoutBtn.classList.add('opacity-40','cursor-not-allowed');
+        }
+
+        // 최소 금액 배너
+        let minBanner = document.getElementById('cart-min-order-banner');
+        if (!minBanner) {
+            minBanner = document.createElement('div');
+            minBanner.id = 'cart-min-order-banner';
+            minBanner.className = 'mb-3 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-xs font-semibold text-red-700 flex items-center gap-2';
+            const btnGroup = checkoutBtn.parentElement;
+            btnGroup.insertBefore(minBanner, btnGroup.firstChild);
+        }
+        if (!minMet) {
+            const remaining = MINIMUM_ORDER_AMOUNT - subtotal;
+            minBanner.classList.remove('hidden');
+            minBanner.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-500 shrink-0"></i> Add <strong>₪${remaining}</strong> more to reach the ₪${MINIMUM_ORDER_AMOUNT} minimum.`;
+        } else {
+            minBanner.classList.add('hidden');
+        }
+    }
+
+    // 배지 & 총액 업데이트
+    if (totalItems > 0) {
+        badge.innerText = totalItems;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+    document.getElementById('cart-grand-total').innerText = `₪${subtotal}`;
 }
 
 // 최소 금액 경고 배너 (없으면 생성, 있으면 업데이트)
@@ -1934,33 +2030,142 @@ async function handlePlaceOrder(event) {
 }
 
 function renderMyOrders() {
-    const emptyV=document.getElementById('no-orders-view');
-    const listC=document.getElementById('orders-list-view');
-    if(!emptyV||!listC) return;
-    if(state.orders.length===0){ emptyV.classList.remove('hidden'); listC.classList.add('hidden'); return; }
-    emptyV.classList.add('hidden'); listC.classList.remove('hidden'); listC.innerHTML='';
-    state.orders.forEach(ord=>{
-        let statusHTML='';
-        if(ord.status==='cooking') statusHTML=`<span class="bg-amber-100 text-amber-900 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-fire-burner animate-spin"></i> ${t('statusCooking')}</span>`;
-        else if(ord.status==='waiting') statusHTML=`<span class="bg-blue-100 text-blue-900 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-truck-fast animate-pulse"></i> ${t('statusWaiting')}</span>`;
-        else if(ord.status==='picked_up'||ord.status==='delivered') statusHTML=`<span class="bg-emerald-100 text-emerald-900 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-box-check"></i> ${state.language==='he'?'איסוף הושלם':t('statusCompleted')}</span>`;
-        else statusHTML=`<span class="bg-emerald-100 text-emerald-900 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> ${t('statusCompleted')}</span>`;
-        const itemRows=ord.cart.map(it=>{ const tr=it.product.translations[state.language]||it.product.translations['en']; return `<div class="flex justify-between items-center text-xs text-stone-700 py-1.5"><span>${tr.name} (${it.product.unit}) <strong class="text-stone-900">x${it.quantity}</strong></span><span class="font-bold">₪${it.product.price*it.quantity}</span></div>`; }).join('');
-        let billingDisposableRow='';
-        if(ord.customer.disposableUtensils) billingDisposableRow=`<div class="flex justify-between items-center text-xs text-amber-800 font-bold py-1.5 border-t border-dashed border-stone-200"><span><i class="fa-solid fa-utensils text-[10px]"></i> ${state.language==='he'?'ערכת כלים חד-פעמיים':'Disposable Utensils Pack'}</span><span>₪5</span></div>`;
-        const locName=state.language==='he'?ord.pickup.locationNameHE:ord.pickup.locationNameEN;
-        const dispText=ord.customer.disposableUtensils?`<span class="text-amber-800 font-bold flex items-center gap-1"><i class="fa-solid fa-utensils"></i> ${t('orderDisposableYes')}</span>`:`<span class="text-stone-400 font-normal">${t('orderDisposableNo')}</span>`;
-        const payText=t('pay_'+(ord.paymentMethod||'cash'));
-        const card=document.createElement('div'); card.className='bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xs space-y-6';
-        card.innerHTML=`<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-4"><div><span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Reservation Reference:</span><h3 class="text-xl font-black text-stone-900 tracking-wider">${ord.id}</h3></div><div class="flex flex-wrap items-center gap-2">${statusHTML}</div></div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs leading-relaxed"><div class="space-y-3.5"><div><strong class="text-stone-400 text-[10px] uppercase font-bold block mb-1">${t('orderLocLabel')}</strong><span class="text-stone-800 font-bold text-sm flex items-center gap-1"><i class="fa-solid fa-location-dot text-amber-700"></i> ${locName}</span></div><div><strong class="text-stone-400 text-[10px] uppercase font-bold block mb-1">${t('orderTimeLabel')}</strong><span class="text-stone-800 font-semibold block"><i class="fa-regular fa-calendar-check text-amber-700"></i> ${ord.pickup.date} (${ord.pickup.day}) · ${ord.pickup.time}</span></div></div>
-        <div class="space-y-3.5"><div><strong class="text-stone-400 text-[10px] uppercase font-bold block mb-1">${t('orderCustomerLabel')}</strong><span class="text-stone-800 font-bold block">${ord.customer.name} (${ord.customer.email})</span></div><div class="grid grid-cols-2 gap-2"><div><strong class="text-stone-400 text-[10px] uppercase font-bold block mb-1">${t('orderDisposableLabel')}</strong><span class="block">${dispText}</span></div><div><strong class="text-stone-400 text-[10px] uppercase font-bold block mb-1">${t('orderPaymentLabel')}</strong><span class="text-stone-800 font-bold flex items-center gap-1"><i class="fa-solid fa-receipt text-[10px] text-amber-800"></i> ${payText}</span></div></div></div></div>
-        <div class="text-xs"><strong class="text-stone-400 text-[10px] uppercase font-bold block mb-1">${t('orderMemoLabel')}</strong><p class="text-stone-600 italic bg-stone-50 p-2.5 rounded-xl border border-stone-200/50">${ord.customer.memo||'None'}</p></div>
-        <div class="bg-stone-50 rounded-2xl p-5 border border-stone-150"><div class="divide-y divide-stone-200">${itemRows}${billingDisposableRow}</div><div class="flex justify-between items-center text-sm font-black text-stone-900 border-t border-stone-200 pt-3 mt-3"><span>${t('orderBillLabel')}</span><span class="text-amber-800 text-lg">₪${ord.total}</span></div></div>
-        <div class="bg-amber-50/50 border border-amber-200/40 rounded-2xl p-4 text-xs text-amber-950 flex gap-2.5"><i class="fa-solid fa-circle-exclamation text-amber-800 text-sm mt-0.5"></i><div><strong>${t('orderInstructionsTitle')}</strong><p class="text-stone-600 mt-1 leading-normal">${t('orderInstructionsDesc')}</p></div></div>`;
+    // 현재 조회 중인 이메일 세션 저장
+let ordersSessionEmail = null;
+
+function handleOrdersEmailLookup() {
+    const input = document.getElementById('orders-email-input');
+    const errorEl = document.getElementById('orders-gate-error');
+    const email = input.value.trim().toLowerCase();
+
+    if (!email) {
+        errorEl.innerText = 'Please enter your email address.';
+        errorEl.classList.remove('hidden');
+        return;
+    }
+
+    // 해당 이메일로 주문 찾기
+    const matched = state.orders.filter(o =>
+        o.customer && o.customer.email && o.customer.email.toLowerCase() === email
+    );
+
+    if (matched.length === 0) {
+        errorEl.innerText = 'No orders found for this email address.';
+        errorEl.classList.remove('hidden');
+        return;
+    }
+
+    // 인증 성공
+    errorEl.classList.add('hidden');
+    ordersSessionEmail = email;
+    sessionStorage.setItem('banchan_orders_email', email);
+
+    document.getElementById('orders-auth-gate').classList.add('hidden');
+    document.getElementById('orders-authenticated-view').classList.remove('hidden');
+    document.getElementById('orders-current-email').innerText = email;
+    renderMyOrders();
+}
+
+function handleOrdersLogout() {
+    ordersSessionEmail = null;
+    sessionStorage.removeItem('banchan_orders_email');
+    document.getElementById('orders-auth-gate').classList.remove('hidden');
+    document.getElementById('orders-authenticated-view').classList.add('hidden');
+    document.getElementById('orders-email-input').value = '';
+    document.getElementById('orders-gate-error').classList.add('hidden');
+}
+
+function renderMyOrders() {
+    const emptyV = document.getElementById('no-orders-view');
+    const listC = document.getElementById('orders-list-view');
+    if (!emptyV || !listC) return;
+
+    // 이메일 인증이 안 된 경우 게이트 표시
+    if (!ordersSessionEmail) {
+        document.getElementById('orders-auth-gate').classList.remove('hidden');
+        document.getElementById('orders-authenticated-view').classList.add('hidden');
+        return;
+    }
+
+    // 해당 이메일 주문만 필터링
+    const myOrders = state.orders.filter(o =>
+        o.customer && o.customer.email && o.customer.email.toLowerCase() === ordersSessionEmail
+    );
+
+    if (myOrders.length === 0) {
+        emptyV.classList.remove('hidden');
+        listC.classList.add('hidden');
+        return;
+    }
+
+    emptyV.classList.add('hidden');
+    listC.classList.remove('hidden');
+    listC.innerHTML = '';
+
+    myOrders.forEach(ord => {
+        let statusHTML = '';
+        if (ord.status === 'cooking') statusHTML = `<span class="bg-amber-100 text-amber-900 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-fire-burner animate-spin"></i> ${t('statusCooking')}</span>`;
+        else if (ord.status === 'waiting') statusHTML = `<span class="bg-blue-100 text-blue-900 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-truck-fast animate-pulse"></i> ${t('statusWaiting')}</span>`;
+        else if (ord.status === 'picked_up' || ord.status === 'delivered') statusHTML = `<span class="bg-emerald-100 text-emerald-900 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-box-check"></i> ${t('statusCompleted')}</span>`;
+        else statusHTML = `<span class="bg-emerald-100 text-emerald-900 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> ${t('statusCompleted')}</span>`;
+
+        const itemRows = ord.cart.map(it => {
+            const tr = it.product.translations[state.language] || it.product.translations['en'];
+            return `<div class="flex justify-between items-center text-xs text-stone-700 py-1.5"><span>${tr.name} (${it.product.unit}) <strong class="text-stone-900">x${it.quantity}</strong></span><span class="font-bold">₪${it.product.price * it.quantity}</span></div>`;
+        }).join('');
+
+        let billingDisposableRow = '';
+        if (ord.customer.disposableUtensils) billingDisposableRow = `<div class="flex justify-between items-center text-xs text-amber-800 font-bold py-1.5 border-t border-dashed border-stone-200"><span><i class="fa-solid fa-utensils text-[10px]"></i> ${state.language==='he'?'ערכת כלים חד-פעמיים':'Disposable Utensils Pack'}</span><span>₪5</span></div>`;
+
+        const locName = state.language === 'he' ? ord.pickup.locationNameHE : ord.pickup.locationNameEN;
+        const dispText = ord.customer.disposableUtensils
+            ? `<span class="text-amber-800 font-bold flex items-center gap-1"><i class="fa-solid fa-utensils"></i> ${t('orderDisposableYes')}</span>`
+            : `<span class="text-stone-400 font-normal">${t('orderDisposableNo')}</span>`;
+        const payText = t('pay_' + (ord.paymentMethod || 'cash'));
+
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xs space-y-6';
+        card.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-4">
+            <div><span class="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Reservation Reference:</span>
+            <h3 class="text-xl font-black text-stone-900 tracking-wider">${ord.id}</h3></div>
+            <div class="flex flex-wrap items-center gap-2">${statusHTML}</div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs leading-relaxed">
+            <div class="space-y-3.5">
+                <div><strong class="text-stone-400 text-[10px] uppercase font-bold block mb-1">${t('orderLocLabel')}</strong>
+                <span class="text-stone-800 font-bold text-sm flex items-center gap-1"><i class="fa-solid fa-location-dot text-amber-700"></i> ${locName}</span></div>
+                <div><strong class="text-stone-400 text-[10px] uppercase font-bold block mb-1">${t('orderTimeLabel')}</strong>
+                <span class="text-stone-800 font-semibold block"><i class="fa-regular fa-calendar-check text-amber-700"></i> ${ord.pickup.date} (${ord.pickup.day}) · ${ord.pickup.time}</span></div>
+            </div>
+            <div class="space-y-3.5">
+                <div><strong class="text-stone-400 text-[10px] uppercase font-bold block mb-1">${t('orderCustomerLabel')}</strong>
+                <span class="text-stone-800 font-bold block">${ord.customer.name} (${ord.customer.email})</span></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div><strong class="text-stone-400 text-[10px] uppercase font-bold block mb-1">${t('orderDisposableLabel')}</strong>
+                    <span class="block">${dispText}</span></div>
+                    <div><strong class="text-stone-400 text-[10px] uppercase font-bold block mb-1">${t('orderPaymentLabel')}</strong>
+                    <span class="text-stone-800 font-bold flex items-center gap-1"><i class="fa-solid fa-receipt text-[10px] text-amber-800"></i> ${payText}</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="text-xs"><strong class="text-stone-400 text-[10px] uppercase font-bold block mb-1">${t('orderMemoLabel')}</strong>
+        <p class="text-stone-600 italic bg-stone-50 p-2.5 rounded-xl border border-stone-200/50">${ord.customer.memo || 'None'}</p></div>
+        <div class="bg-stone-50 rounded-2xl p-5 border border-stone-150">
+            <div class="divide-y divide-stone-200">${itemRows}${billingDisposableRow}</div>
+            <div class="flex justify-between items-center text-sm font-black text-stone-900 border-t border-stone-200 pt-3 mt-3">
+                <span>${t('orderBillLabel')}</span><span class="text-amber-800 text-lg">₪${ord.total}</span>
+            </div>
+        </div>
+        <div class="bg-amber-50/50 border border-amber-200/40 rounded-2xl p-4 text-xs text-amber-950 flex gap-2.5">
+            <i class="fa-solid fa-circle-exclamation text-amber-800 text-sm mt-0.5"></i>
+            <div><strong>${t('orderInstructionsTitle')}</strong>
+            <p class="text-stone-600 mt-1 leading-normal">${t('orderInstructionsDesc')}</p></div>
+        </div>`;
         listC.appendChild(card);
     });
 }
+
 
 function simulateOrderStatusChange(orderId) {
     const idx=state.orders.findIndex(o=>o.id===orderId); if(idx===-1) return;
