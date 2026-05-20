@@ -400,9 +400,98 @@
                     <div id="admin-menu-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                 </div>
                 <div id="admin-subtab-spots" class="admin-subtab hidden space-y-6">
-                    <h3 class="text-lg font-black text-stone-900">Configure Pickup Spots & Schedule Timings</h3>
-                    <div id="admin-spots-list" class="space-y-4"></div>
+    <!-- 헤더 -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-stone-200">
+        <div>
+            <h3 class="text-lg font-black text-stone-900">Pickup Spots & Schedule</h3>
+            <p class="text-xs text-stone-500 mt-0.5">Add, remove, and configure each pickup location's hours and time slots.</p>
+        </div>
+        <button onclick="openAddSpotModal()" class="px-5 py-3 bg-amber-800 hover:bg-amber-900 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-2 shadow-sm shrink-0">
+            <i class="fa-solid fa-plus"></i> Add New Spot
+        </button>
+    </div>
+
+    <!-- 스팟 추가/수정 모달 -->
+    <div id="spot-item-modal" class="hidden bg-stone-50 border border-stone-200 p-6 rounded-3xl space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-stone-200">
+            <h4 id="spot-modal-title" class="text-base font-black text-stone-900">Add New Pickup Spot</h4>
+            <button onclick="closeSpotModal()" class="text-stone-400 hover:text-stone-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <input type="hidden" id="edit-spot-id">
+            <div>
+                <label class="block font-bold text-stone-700 mb-1">Spot ID (unique, no spaces) *</label>
+                <input type="text" id="spot-id-input" placeholder="e.g. mahane-yehuda" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-mono">
+                <p class="text-[10px] text-stone-400 mt-1">Used internally. Cannot be changed after creation.</p>
+            </div>
+            <div></div>
+            <div>
+                <label class="block font-bold text-stone-700 mb-1">Location Name (English) *</label>
+                <input type="text" id="spot-name-en" placeholder="e.g. Mahane Yehuda Market" class="w-full bg-white border border-stone-300 rounded-lg p-2.5">
+            </div>
+            <div>
+                <label class="block font-bold text-stone-700 mb-1">שם המיקום (Hebrew) *</label>
+                <input type="text" id="spot-name-he" dir="rtl" placeholder="e.g. שוק מחנה יהודה" class="w-full bg-white border border-stone-300 rounded-lg p-2.5">
+            </div>
+            <div>
+                <label class="block font-bold text-stone-700 mb-1">Sub-label (English)</label>
+                <input type="text" id="spot-sub-en" placeholder="e.g. Jaffa Road entrance" class="w-full bg-white border border-stone-300 rounded-lg p-2.5">
+            </div>
+            <div>
+                <label class="block font-bold text-stone-700 mb-1">תת-כותרת (Hebrew)</label>
+                <input type="text" id="spot-sub-he" dir="rtl" placeholder="e.g. כניסת רחוב יפו" class="w-full bg-white border border-stone-300 rounded-lg p-2.5">
+            </div>
+            <div>
+                <label class="block font-bold text-stone-700 mb-1">Exact Meeting Point (English) *</label>
+                <textarea id="spot-spot-en" rows="2" placeholder="e.g. In front of the main gate, near the fountain" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 resize-none"></textarea>
+            </div>
+            <div>
+                <label class="block font-bold text-stone-700 mb-1">נקודת מפגש מדויקת (Hebrew) *</label>
+                <textarea id="spot-spot-he" rows="2" dir="rtl" placeholder="e.g. מול השער הראשי, ליד המזרקה" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 resize-none"></textarea>
+            </div>
+            <div>
+                <label class="block font-bold text-stone-700 mb-1">Operating Hours (English) *</label>
+                <input type="text" id="spot-time-en-modal" placeholder="e.g. Tuesdays & Fridays: 14:00 - 15:30" class="w-full bg-white border border-stone-300 rounded-lg p-2.5">
+            </div>
+            <div>
+                <label class="block font-bold text-stone-700 mb-1">שעות פעילות (Hebrew) *</label>
+                <input type="text" id="spot-time-he-modal" dir="rtl" placeholder="e.g. ימי שלישי ושישי: 14:00 - 15:30" class="w-full bg-white border border-stone-300 rounded-lg p-2.5">
+            </div>
+            <div>
+                <label class="block font-bold text-stone-700 mb-1">Instructions (English)</label>
+                <textarea id="spot-instructions-en" rows="2" placeholder="e.g. Look for the silver SUV with orange cooler bags." class="w-full bg-white border border-stone-300 rounded-lg p-2.5 resize-none"></textarea>
+            </div>
+            <div>
+                <label class="block font-bold text-stone-700 mb-1">הוראות (Hebrew)</label>
+                <textarea id="spot-instructions-he" rows="2" dir="rtl" placeholder="e.g. חפשו רכב שטח כסוף עם צידניות כתומות." class="w-full bg-white border border-stone-300 rounded-lg p-2.5 resize-none"></textarea>
+            </div>
+
+            <!-- 픽업 날짜/시간 슬롯 -->
+            <div class="md:col-span-2">
+                <label class="block font-bold text-stone-700 mb-2">Pickup Days</label>
+                <div class="flex flex-wrap gap-2" id="spot-days-checkboxes">
+                    <!-- JS로 렌더 -->
                 </div>
+            </div>
+            <div class="md:col-span-2">
+                <label class="block font-bold text-stone-700 mb-1">Time Slots <span class="font-normal text-stone-400">(comma-separated, e.g. 12:00, 12:30, 13:00)</span></label>
+                <input type="text" id="spot-slots-modal" placeholder="12:00, 12:30, 13:00, 13:30" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-mono">
+            </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-2">
+            <button type="button" onclick="closeSpotModal()" class="px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded-xl font-bold text-xs transition-all">Cancel</button>
+            <button type="button" onclick="handleSaveSpot()" class="px-5 py-2.5 bg-amber-800 hover:bg-amber-900 text-white rounded-xl font-bold text-xs transition-all">Save Spot</button>
+        </div>
+    </div>
+
+    <!-- 스팟 목록 -->
+    <div id="admin-spots-list" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+    <div id="admin-spots-empty" class="hidden p-12 text-center bg-white border border-dashed border-stone-300 rounded-3xl">
+        <i class="fa-solid fa-location-dot text-4xl text-stone-300 mb-3"></i>
+        <p class="text-sm font-bold text-stone-500">No pickup spots configured yet.</p>
+        <p class="text-xs text-stone-400 mt-1">Click "Add New Spot" to get started.</p>
+    </div>
+</div>
                 <div id="admin-subtab-orders" class="admin-subtab hidden space-y-6">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-black text-stone-900">Store Orders</h3>
@@ -1909,28 +1998,217 @@ function deleteMenuItem(id) {
     if(confirm('Are you sure you want to delete this menu item?')){ state.menuItems=state.menuItems.filter(it=>it.id!==id); saveMenuItems(); renderAdminMenuList(); renderMenu(); showToast('Offering Removed','The item was deleted from catalog offerings.'); }
 }
 
-function renderAdminSpotsList() {
-    const c=document.getElementById('admin-spots-list'); if(!c) return; c.innerHTML='';
-    state.pickupSpots.forEach(spot=>{
-        const card=document.createElement('div'); card.className='bg-white p-6 rounded-2xl border border-stone-200 space-y-4';
-        card.innerHTML=`<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-stone-100"><h4 class="font-black text-stone-900 text-sm flex items-center gap-1.5"><i class="fa-solid fa-location-dot text-amber-800"></i> ${spot.translations.en.name}</h4><span class="text-[10px] text-stone-400 uppercase font-black">Spot ID: ${spot.id}</span></div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs"><div><label class="block font-bold text-stone-700 mb-1">Operational Hours (English)</label><input type="text" id="spot-time-en-${spot.id}" value="${spot.translations.en.time}" class="w-full bg-stone-50 border border-stone-300 rounded-lg p-2.5"></div><div><label class="block font-bold text-stone-700 mb-1">Operational Hours (Hebrew)</label><input type="text" dir="rtl" id="spot-time-he-${spot.id}" value="${spot.translations.he?.time||''}" class="w-full bg-stone-50 border border-stone-300 rounded-lg p-2.5"></div>
-        <div class="md:col-span-2"><label class="block font-bold text-stone-700 mb-1">Time Slots (comma-separated)</label><input type="text" id="spot-slots-${spot.id}" value="${spot.times.join(', ')}" class="w-full bg-stone-50 border border-stone-300 rounded-lg p-2.5 font-mono text-xs"></div></div>
-        <div class="flex justify-end pt-2"><button onclick="saveAdminSpotSettings('${spot.id}')" class="px-4 py-2 bg-stone-950 text-white font-bold text-xs rounded-xl transition-all">Save Spot Details</button></div>`;
-        c.appendChild(card);
-    });
+// ================================================================
+// PICKUP SPOTS 관리 (추가 / 수정 / 삭제)
+// ================================================================
+
+const DAYS_OF_WEEK = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+function openAddSpotModal() {
+    document.getElementById('spot-modal-title').innerText = 'Add New Pickup Spot';
+    document.getElementById('edit-spot-id').value = '';
+    document.getElementById('spot-id-input').value = '';
+    document.getElementById('spot-id-input').disabled = false;
+    ['spot-name-en','spot-name-he','spot-sub-en','spot-sub-he','spot-spot-en','spot-spot-he',
+     'spot-time-en-modal','spot-time-he-modal','spot-instructions-en','spot-instructions-he','spot-slots-modal']
+        .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    renderSpotDayCheckboxes([]);
+    document.getElementById('spot-item-modal').classList.remove('hidden');
+    document.getElementById('spot-item-modal').scrollIntoView({ behavior: 'smooth' });
 }
 
-function saveAdminSpotSettings(spotId) {
-    const idx=state.pickupSpots.findIndex(s=>s.id===spotId); if(idx===-1) return;
-    state.pickupSpots[idx].translations.en.time=document.getElementById(`spot-time-en-${spotId}`).value;
-    if(!state.pickupSpots[idx].translations.he) state.pickupSpots[idx].translations.he={};
-    state.pickupSpots[idx].translations.he.time=document.getElementById(`spot-time-he-${spotId}`).value;
-    state.pickupSpots[idx].times=document.getElementById(`spot-slots-${spotId}`).value.split(',').map(s=>s.trim()).filter(Boolean);
-    localStorage.setItem(SPOTS_STORAGE_KEY,JSON.stringify(state.pickupSpots));
-    if (isCloudSyncEnabled()) cloudPushSpots().catch(function(e) { console.error('Cloud spots save', e); });
-    populateLocationSelect(); renderAdminSpotsList();
-    showToast('Pickup Spot Updated',`Changes for ${state.pickupSpots[idx].translations.en.name} saved.`);
+function openEditSpotModal(spotId) {
+    const spot = state.pickupSpots.find(s => s.id === spotId);
+    if (!spot) return;
+    document.getElementById('spot-modal-title').innerText = 'Edit Pickup Spot';
+    document.getElementById('edit-spot-id').value = spot.id;
+    document.getElementById('spot-id-input').value = spot.id;
+    document.getElementById('spot-id-input').disabled = true;
+    const enT = spot.translations.en || {};
+    const heT = spot.translations.he || {};
+    document.getElementById('spot-name-en').value = enT.name || '';
+    document.getElementById('spot-name-he').value = heT.name || '';
+    document.getElementById('spot-sub-en').value = enT.sub || '';
+    document.getElementById('spot-sub-he').value = heT.sub || '';
+    document.getElementById('spot-spot-en').value = enT.spot || '';
+    document.getElementById('spot-spot-he').value = heT.spot || '';
+    document.getElementById('spot-time-en-modal').value = enT.time || '';
+    document.getElementById('spot-time-he-modal').value = heT.time || '';
+    document.getElementById('spot-instructions-en').value = enT.instructions || '';
+    document.getElementById('spot-instructions-he').value = heT.instructions || '';
+    document.getElementById('spot-slots-modal').value = (spot.times || []).join(', ');
+    renderSpotDayCheckboxes(spot.days || []);
+    document.getElementById('spot-item-modal').classList.remove('hidden');
+    document.getElementById('spot-item-modal').scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderSpotDayCheckboxes(selectedDays) {
+    const c = document.getElementById('spot-days-checkboxes');
+    if (!c) return;
+    c.innerHTML = DAYS_OF_WEEK.map(day => {
+        const checked = selectedDays.includes(day);
+        return `<label class="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-bold cursor-pointer transition-all select-none ${checked ? 'bg-amber-800 text-white border-amber-800' : 'bg-white text-stone-600 border-stone-300 hover:border-amber-800'}" id="day-label-${day}">
+            <input type="checkbox" class="hidden spot-day-cb" value="${day}" ${checked ? 'checked' : ''} onchange="toggleDayLabel(this,'${day}')">
+            ${day.slice(0,3)}
+        </label>`;
+    }).join('');
+}
+
+function toggleDayLabel(cb, day) {
+    const label = document.getElementById('day-label-' + day);
+    if (!label) return;
+    if (cb.checked) {
+        label.className = label.className.replace('bg-white text-stone-600 border-stone-300 hover:border-amber-800','bg-amber-800 text-white border-amber-800');
+    } else {
+        label.className = label.className.replace('bg-amber-800 text-white border-amber-800','bg-white text-stone-600 border-stone-300 hover:border-amber-800');
+    }
+}
+
+function closeSpotModal() {
+    document.getElementById('spot-item-modal').classList.add('hidden');
+}
+
+function handleSaveSpot() {
+    const editId = document.getElementById('edit-spot-id').value;
+    const rawId = document.getElementById('spot-id-input').value.trim().replace(/\s+/g,'-').toLowerCase();
+    if (!rawId) { showToast('Validation Error', 'Spot ID is required.', true); return; }
+    const nameEn = document.getElementById('spot-name-en').value.trim();
+    const nameHe = document.getElementById('spot-name-he').value.trim();
+    if (!nameEn || !nameHe) { showToast('Validation Error', 'Both English and Hebrew names are required.', true); return; }
+    const selectedDays = Array.from(document.querySelectorAll('.spot-day-cb:checked')).map(cb => cb.value);
+    const slotsRaw = document.getElementById('spot-slots-modal').value;
+    const times = slotsRaw.split(',').map(s => s.trim()).filter(Boolean);
+
+    const newSpot = {
+        id: editId || rawId,
+        days: selectedDays,
+        times,
+        translations: {
+            en: {
+                name: nameEn,
+                sub: document.getElementById('spot-sub-en').value.trim(),
+                spot: document.getElementById('spot-spot-en').value.trim(),
+                time: document.getElementById('spot-time-en-modal').value.trim(),
+                instructions: document.getElementById('spot-instructions-en').value.trim()
+            },
+            he: {
+                name: nameHe,
+                sub: document.getElementById('spot-sub-he').value.trim(),
+                spot: document.getElementById('spot-spot-he').value.trim(),
+                time: document.getElementById('spot-time-he-modal').value.trim(),
+                instructions: document.getElementById('spot-instructions-he').value.trim()
+            }
+        }
+    };
+
+    if (editId) {
+        const idx = state.pickupSpots.findIndex(s => s.id === editId);
+        if (idx !== -1) state.pickupSpots[idx] = newSpot;
+        else state.pickupSpots.push(newSpot);
+    } else {
+        if (state.pickupSpots.find(s => s.id === rawId)) {
+            showToast('ID Conflict', 'A spot with this ID already exists.', true);
+            return;
+        }
+        state.pickupSpots.push(newSpot);
+    }
+
+    localStorage.setItem(SPOTS_STORAGE_KEY, JSON.stringify(state.pickupSpots));
+    if (isCloudSyncEnabled()) cloudPushSpots().catch(e => console.error('Cloud spots save', e));
+    populateLocationSelect();
+    renderFooterLocations();
+    renderAdminSpotsList();
+    closeSpotModal();
+    showToast('Spot Saved', `"${nameEn}" has been saved successfully.`);
+}
+
+function deleteSpot(spotId) {
+    const spot = state.pickupSpots.find(s => s.id === spotId);
+    if (!spot) return;
+    if (!confirm(`Delete "${spot.translations.en.name}"? This cannot be undone.`)) return;
+    state.pickupSpots = state.pickupSpots.filter(s => s.id !== spotId);
+    localStorage.setItem(SPOTS_STORAGE_KEY, JSON.stringify(state.pickupSpots));
+    if (isCloudSyncEnabled()) cloudPushSpots().catch(e => console.error('Cloud spots delete', e));
+    populateLocationSelect();
+    renderFooterLocations();
+    renderAdminSpotsList();
+    showToast('Spot Deleted', `"${spot.translations.en.name}" removed.`);
+}
+
+function renderAdminSpotsList() {
+    const c = document.getElementById('admin-spots-list');
+    const emptyEl = document.getElementById('admin-spots-empty');
+    if (!c) return;
+    c.innerHTML = '';
+
+    if (state.pickupSpots.length === 0) {
+        if (emptyEl) emptyEl.classList.remove('hidden');
+        return;
+    }
+    if (emptyEl) emptyEl.classList.add('hidden');
+
+    state.pickupSpots.forEach(spot => {
+        const enT = spot.translations.en || {};
+        const heT = spot.translations.he || {};
+        const daysHtml = (spot.days || []).length > 0
+            ? spot.days.map(d => `<span class="px-2 py-0.5 bg-amber-100 text-amber-900 text-[10px] font-bold rounded-lg">${d.slice(0,3)}</span>`).join('')
+            : '<span class="text-[10px] text-stone-400">No days set</span>';
+        const slotsHtml = (spot.times || []).length > 0
+            ? spot.times.map(t => `<span class="px-2 py-0.5 bg-stone-100 text-stone-700 text-[10px] font-mono font-bold rounded-lg">${t}</span>`).join('')
+            : '<span class="text-[10px] text-stone-400">No time slots set</span>';
+
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow';
+        card.innerHTML = `
+            <!-- 카드 헤더 -->
+            <div class="bg-stone-950 text-white px-5 py-4 flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2 mb-0.5">
+                        <i class="fa-solid fa-location-dot text-amber-500 text-sm shrink-0"></i>
+                        <h4 class="font-black text-sm truncate">${enT.name || spot.id}</h4>
+                    </div>
+                    <p class="text-stone-400 text-[10px] font-mono ps-5">${spot.id}</p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="openEditSpotModal('${spot.id}')" class="p-1.5 bg-stone-800 hover:bg-amber-800 text-stone-300 hover:text-white rounded-lg transition-all text-xs" title="Edit">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button onclick="deleteSpot('${spot.id}')" class="p-1.5 bg-stone-800 hover:bg-red-600 text-stone-300 hover:text-white rounded-lg transition-all text-xs" title="Delete">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- 카드 바디 -->
+            <div class="p-5 space-y-4 text-xs">
+                <!-- 픽업 요일 & 시간 -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <p class="text-[10px] font-bold text-stone-400 uppercase mb-1.5">Pickup Days</p>
+                        <div class="flex flex-wrap gap-1">${daysHtml}</div>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-stone-400 uppercase mb-1.5">Time Slots</p>
+                        <div class="flex flex-wrap gap-1">${slotsHtml}</div>
+                    </div>
+                </div>
+                <!-- 운영 시간 텍스트 -->
+                ${enT.time ? `<div class="bg-amber-50 border border-amber-200/50 rounded-xl px-3 py-2">
+                    <p class="text-[10px] font-bold text-amber-800 mb-0.5"><i class="fa-regular fa-clock mr-1"></i>Hours</p>
+                    <p class="text-stone-700 font-semibold">${enT.time}</p>
+                </div>` : ''}
+                <!-- 만남 장소 -->
+                ${enT.spot ? `<div>
+                    <p class="text-[10px] font-bold text-stone-400 uppercase mb-1"><i class="fa-solid fa-map-pin text-amber-700 mr-1"></i>Meeting Point</p>
+                    <p class="text-stone-600 leading-relaxed">${enT.spot}</p>
+                </div>` : ''}
+                <!-- 헤브루 요약 -->
+                ${heT.name ? `<div class="border-t border-stone-100 pt-3">
+                    <p class="text-[10px] font-bold text-stone-400 uppercase mb-1">Hebrew</p>
+                    <p class="text-stone-700 font-semibold text-end" dir="rtl">${heT.name}${heT.time ? ' · ' + heT.time : ''}</p>
+                </div>` : ''}
+            </div>`;
+        c.appendChild(card);
+    });
 }
 
 function buildAdminOrderCard(ord, isCompleted) {
