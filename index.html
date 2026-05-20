@@ -946,9 +946,7 @@ async function prepareMenuForCloud(menuItems) {
     const out = [];
     for (const item of menuItems) {
         const copy = JSON.parse(JSON.stringify(item));
-        if (copy.image && String(copy.image).startsWith('data:')) {
-            copy.image = await uploadMenuImageIfNeeded(copy.id, copy.image);
-        }
+        // base64 이미지를 그대로 클라우드에 저장 (Storage 버킷 불필요)
         out.push(normalizeMenuItem(copy, DEFAULT_MENU_ITEMS.find(d => d.id === copy.id)));
     }
     return out;
@@ -1061,7 +1059,7 @@ function mergeMenuWithDefaults(savedItem) {
             if (!savedItem.translations[lang].description) savedItem.translations[lang].description = def.translations[lang].description;
             if (savedItem.translations[lang].badge === undefined) savedItem.translations[lang].badge = def.translations[lang].badge;
         });
-        savedItem.image = savedItem.image || def.image;
+        savedItem.image = (savedItem.image && savedItem.image !== '') ? savedItem.image : (def ? def.image : '');
         if (!savedItem.price) savedItem.price = def.price;
         savedItem.unit = savedItem.unit || def.unit;
     }
