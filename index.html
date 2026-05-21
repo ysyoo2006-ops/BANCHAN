@@ -1619,44 +1619,24 @@ function adjustCartQty(itemId, dir) {
 function updateCartUI() {
     const c = document.getElementById('cart-items-container');
     const badge = document.getElementById('cart-badge');
-    if (!c) return; c.innerHTML='';
+    const checkoutBtn = document.getElementById('cart-checkout-btn');
+    const grandTotal = document.getElementById('cart-grand-total');
+    if (!c) return;
+    c.innerHTML='';
     let totalItems=0, subtotal=0;
     if (state.cart.length===0) {
         c.innerHTML=`<div class="flex flex-col items-center justify-center py-20 text-center text-stone-400"><i class="fa-solid fa-basket-shopping text-5xl mb-4 text-stone-300"></i><p class="text-sm font-bold text-stone-600">${state.language==='he'?'סל הקניות שלך ריק':'Your Basket is Empty'}</p><p class="text-xs mt-1 max-w-[200px] text-stone-400">${state.language==='he'?'הוסיפו מנות מהתפריט!':'Add delicious handcrafted meals to get started!'}</p></div>`;
-        document.getElementById('cart-checkout-btn').disabled=true;
-        document.getElementById('cart-checkout-btn').classList.add('opacity-40','cursor-not-allowed');
+        if (checkoutBtn) {
+            checkoutBtn.disabled=true;
+            checkoutBtn.classList.add('opacity-40','cursor-not-allowed');
+        }
         const minBanner = document.getElementById('cart-min-order-banner');
         if (minBanner) minBanner.classList.add('hidden');
     } else {
-        const subtotal = state.cart.reduce((s,it) => s + it.product.price * it.quantity, 0);
-const minMet = subtotal >= MINIMUM_ORDER_AMOUNT;
-const checkoutBtn = document.getElementById('cart-checkout-btn');
-checkoutBtn.disabled = !minMet;
-if (minMet) {
-    checkoutBtn.classList.remove('opacity-40','cursor-not-allowed');
-} else {
-    checkoutBtn.classList.add('opacity-40','cursor-not-allowed');
-}
-
-// 최소 금액 경고 배너 (없으면 생성, 있으면 업데이트)
-let minBanner = document.getElementById('cart-min-order-banner');
-if (!minBanner) {
-    minBanner = document.createElement('div');
-    minBanner.id = 'cart-min-order-banner';
-    minBanner.className = 'mx-0 mb-3 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-xs font-semibold text-red-700 flex items-center gap-2';
-    // 버튼 그룹 위에 삽입
-    const btnGroup = checkoutBtn.parentElement;
-    btnGroup.insertBefore(minBanner, btnGroup.firstChild);
-}
-const remaining = MINIMUM_ORDER_AMOUNT - subtotal;
-if (!minMet) {
-    minBanner.classList.remove('hidden');
-    minBanner.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-500"></i> Add <strong>₪${remaining}</strong> more to reach the ₪${MINIMUM_ORDER_AMOUNT} minimum.`;
-} else {
-    minBanner.classList.add('hidden');
-}
         state.cart.forEach(it => {
-            totalItems+=it.quantity; const p=it.product.price*it.quantity; subtotal+=p;
+            totalItems+=it.quantity;
+            const p=it.product.price*it.quantity;
+            subtotal+=p;
             const name=it.product.translations[state.language]?.name||it.product.translations['en'].name;
             const row=document.createElement('div'); row.className='bg-stone-50 p-4 rounded-xl border border-stone-200/50 flex gap-4 items-start';
             row.innerHTML=`<img src="${it.product.image}" onerror="this.src='https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=600&auto=format&fit=crop'" class="w-14 h-14 rounded-lg object-cover border border-stone-200">
@@ -1664,12 +1644,36 @@ if (!minMet) {
             <div class="flex items-center justify-between"><div class="flex items-center border border-stone-200 bg-white rounded-lg overflow-hidden"><button onclick="adjustCartQty('${it.product.id}',-1)" class="px-2 py-1 text-stone-500 hover:bg-stone-100 transition-colors"><i class="fa-solid fa-minus text-[9px]"></i></button><span class="px-2 text-xs font-black text-stone-800 w-6 text-center">${it.quantity}</span><button onclick="adjustCartQty('${it.product.id}',1)" class="px-2 py-1 text-stone-500 hover:bg-stone-100 transition-colors"><i class="fa-solid fa-plus text-[9px]"></i></button></div><span class="font-black text-stone-900 text-xs">₪${p}</span></div></div>`;
             c.appendChild(row);
         });
+
+        const minMet = subtotal >= MINIMUM_ORDER_AMOUNT;
+        if (checkoutBtn) {
+            checkoutBtn.disabled = !minMet;
+            if (minMet) checkoutBtn.classList.remove('opacity-40','cursor-not-allowed');
+            else checkoutBtn.classList.add('opacity-40','cursor-not-allowed');
+        }
+
+        let minBanner = document.getElementById('cart-min-order-banner');
+        if (!minBanner && checkoutBtn && checkoutBtn.parentElement) {
+            minBanner = document.createElement('div');
+            minBanner.id = 'cart-min-order-banner';
+            minBanner.className = 'mx-0 mb-3 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-xs font-semibold text-red-700 flex items-center gap-2';
+            checkoutBtn.parentElement.insertBefore(minBanner, checkoutBtn.parentElement.firstChild);
+        }
+        if (minBanner) {
+            const remaining = MINIMUM_ORDER_AMOUNT - subtotal;
+            if (!minMet) {
+                minBanner.classList.remove('hidden');
+                minBanner.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-500"></i> Add <strong>₪${remaining}</strong> more to reach the ₪${MINIMUM_ORDER_AMOUNT} minimum.`;
+            } else {
+                minBanner.classList.add('hidden');
+            }
+        }
     }
     if (badge) {
         if (totalItems>0) { badge.innerText=totalItems; badge.classList.remove('hidden'); }
         else badge.classList.add('hidden');
     }
-    document.getElementById('cart-grand-total').innerText=`₪${subtotal}`;
+    if (grandTotal) grandTotal.innerText=`₪${subtotal}`;
 }
 
 const MINIMUM_ORDER_AMOUNT = 50; // ₪
