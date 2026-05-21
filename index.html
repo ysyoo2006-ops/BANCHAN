@@ -292,6 +292,23 @@
                 <p class="text-stone-600 text-sm mt-2" id="orders-sub-title">View and manage your scheduled Banchan pickups in Jerusalem.</p>
                 <div class="w-12 h-1 bg-amber-800 mx-auto mt-4 rounded-full"></div>
             </div>
+            <div id="orders-email-view" class="bg-white rounded-3xl p-8 sm:p-10 border border-stone-200 shadow-xs">
+                <div class="max-w-lg mx-auto text-center">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-800 flex items-center justify-center mx-auto mb-5">
+                        <i class="fa-solid fa-envelope-open-text text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-stone-900" id="orders-email-title">Enter your order email</h3>
+                    <p class="text-stone-500 text-sm mt-2" id="orders-email-desc">Only reservations made with this email address will be shown.</p>
+                    <form onsubmit="handleOrdersEmailSubmit(event)" class="mt-6 flex flex-col sm:flex-row gap-3">
+                        <input type="email" id="orders-email-input" required autocomplete="email" placeholder="you@example.com" class="flex-grow bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-stone-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-amber-800/20 focus:border-amber-800 transition-all">
+                        <button type="submit" id="orders-email-btn" class="px-6 py-3 bg-amber-800 hover:bg-amber-900 text-white font-black text-sm rounded-xl transition-all">View Orders</button>
+                    </form>
+                </div>
+            </div>
+            <div id="orders-email-active" class="hidden mb-5 bg-amber-50 border border-amber-200/60 rounded-2xl px-4 py-3 text-xs text-amber-950 font-semibold flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <span><i class="fa-solid fa-envelope text-amber-700 me-1.5"></i><span id="orders-email-active-label">Showing orders for</span> <strong id="orders-email-current"></strong></span>
+                <button onclick="clearOrdersEmail()" id="orders-email-change-btn" class="text-amber-900 hover:text-stone-950 font-black underline underline-offset-4 text-start">Change email</button>
+            </div>
             <div id="no-orders-view" class="bg-white rounded-3xl p-12 text-center border border-stone-200 shadow-xs">
                 <div class="w-16 h-16 bg-stone-50 text-stone-400 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-stone-100">
                     <i class="fa-regular fa-folder-open text-3xl text-amber-800"></i>
@@ -795,6 +812,8 @@ const LOCALIZATION = {
         checkoutBtnCancel:'Cancel & Back', checkoutBtnSubmit:'Place Reservation Order',
         ordersMainTitle:'Reservation Tracking', ordersSubTitle:'View and manage your scheduled Banchan pickups in Jerusalem.',
         ordersEmptyTitle:'No Reservations Found', ordersEmptyDesc:'Your active and historical Korean Banchan reservations will appear here once submitted.',
+        ordersEmailTitle:'Enter your order email', ordersEmailDesc:'Only reservations made with this email address will be shown.',
+        ordersEmailBtn:'View Orders', ordersEmailActiveLabel:'Showing orders for', ordersEmailChangeBtn:'Change email',
         ordersEmptyBtn:'Order Banchan Now', cartTitle:'Your Basket', cartTotalLabelSide:'Subtotal',
         cartCheckoutBtnText:'Proceed to Details', cartKeepBtn:'Continue Selecting',
         faqWidgetTitle:'How BANCHAN Works',
@@ -843,6 +862,8 @@ const LOCALIZATION = {
         checkoutBtnCancel:'ביטול וחזרה', checkoutBtnSubmit:'בצע הזמנת שריון',
         ordersMainTitle:'מעקב אחר הזמנות', ordersSubTitle:'צפו ונהלו את איסופי הבאנצ\'אן שלכם בירושלים.',
         ordersEmptyTitle:'לא נמצאו הזמנות', ordersEmptyDesc:'ההזמנות הפעילות וההיסטוריות שלכם יופיעו כאן לאחר השליחה.',
+        ordersEmailTitle:'הכניסו את אימייל ההזמנה', ordersEmailDesc:'יוצגו רק הזמנות שבוצעו עם כתובת האימייל הזו.',
+        ordersEmailBtn:'הצג הזמנות', ordersEmailActiveLabel:'מציג הזמנות עבור', ordersEmailChangeBtn:'שינוי אימייל',
         ordersEmptyBtn:'הזמינו באנצ\'אן עכשיו', cartTitle:'סל הקניות שלך', cartTotalLabelSide:'סכום ביניים',
         cartCheckoutBtnText:'המשך להזנת פרטים', cartKeepBtn:'המשך בבחירה',
         faqWidgetTitle:'איך BANCHAN עובד',
@@ -886,6 +907,7 @@ let state = {
     menuItems: [], pickupSpots: [],
     currentCategory: 'all', currentTab: 'menu',
     isAdminAuthenticated: false, currentAdminTab: 'menu',
+    myOrdersEmail: '',
     temporaryUploadedImageBase64: '',
     loginAttempts: 0, lockoutUntil: 0
 };
@@ -1391,6 +1413,9 @@ function setLanguage(lang) {
         ['checkout-opt-bitnow-title','checkoutOptBitnowTitle'],['checkout-opt-bitnow-desc','checkoutOptBitnowDesc'],
         ['orders-main-title','ordersMainTitle'],['orders-sub-title','ordersSubTitle'],
         ['orders-empty-title','ordersEmptyTitle'],['orders-empty-desc','ordersEmptyDesc'],
+        ['orders-email-title','ordersEmailTitle'],['orders-email-desc','ordersEmailDesc'],
+        ['orders-email-btn','ordersEmailBtn'],['orders-email-active-label','ordersEmailActiveLabel'],
+        ['orders-email-change-btn','ordersEmailChangeBtn'],
         ['orders-empty-btn','ordersEmptyBtn'],['cart-title','cartTitle'],
         ['cart-total-label-side','cartTotalLabelSide'],['cart-checkout-btn-text','cartCheckoutBtnText'],
         ['cart-keep-btn','cartKeepBtn'],['faq-widget-title','faqWidgetTitle'],
@@ -1600,6 +1625,8 @@ function updateCartUI() {
         c.innerHTML=`<div class="flex flex-col items-center justify-center py-20 text-center text-stone-400"><i class="fa-solid fa-basket-shopping text-5xl mb-4 text-stone-300"></i><p class="text-sm font-bold text-stone-600">${state.language==='he'?'סל הקניות שלך ריק':'Your Basket is Empty'}</p><p class="text-xs mt-1 max-w-[200px] text-stone-400">${state.language==='he'?'הוסיפו מנות מהתפריט!':'Add delicious handcrafted meals to get started!'}</p></div>`;
         document.getElementById('cart-checkout-btn').disabled=true;
         document.getElementById('cart-checkout-btn').classList.add('opacity-40','cursor-not-allowed');
+        const minBanner = document.getElementById('cart-min-order-banner');
+        if (minBanner) minBanner.classList.add('hidden');
     } else {
         const subtotal = state.cart.reduce((s,it) => s + it.product.price * it.quantity, 0);
 const minMet = subtotal >= MINIMUM_ORDER_AMOUNT;
@@ -1638,7 +1665,10 @@ if (!minMet) {
             c.appendChild(row);
         });
     }
-    if (totalItems>0) { badge.innerText=totalItems; badge.classList.remove('hidden'); } else badge.classList.add('hidden');
+    if (badge) {
+        if (totalItems>0) { badge.innerText=totalItems; badge.classList.remove('hidden'); }
+        else badge.classList.add('hidden');
+    }
     document.getElementById('cart-grand-total').innerText=`₪${subtotal}`;
 }
 
@@ -1838,7 +1868,8 @@ function renderCheckoutSummary() {
         list.appendChild(div);
     });
     if(document.getElementById('disposable-utensils').checked){ sum+=5; const div=document.createElement('div'); div.className='py-3 flex items-center justify-between text-amber-800 text-xs font-bold bg-amber-50/50 px-2.5 rounded-xl mt-2 border border-amber-200/30'; div.innerHTML=`<span><i class="fa-solid fa-utensils"></i> ${state.language==='he'?'ערכת כלים חד-פעמיים':'Disposable Utensils Pack'}</span><span>₪5</span>`; list.appendChild(div); }
-    document.getElementById('checkout-summary-count').innerText=`${state.cart.length} ${state.language==='he'?'פריטים':'Items'}`;
+    const totalItems = state.cart.reduce((s,it)=>s+it.quantity,0);
+    document.getElementById('checkout-summary-count').innerText=`${totalItems} ${state.language==='he'?'פריטים':'Items'}`;
     document.getElementById('checkout-total-price').innerText=`₪${sum}`;
     updatePaymentButtonText();
 }
@@ -1922,6 +1953,7 @@ async function handlePlaceOrder(event) {
         const orderForm = document.getElementById('order-form');
         if (orderForm) orderForm.reset();
         updatePickupTimeOptions('');
+        state.myOrdersEmail = normalizeEmail(email);
 
         showToast(t('toastOrderSuccess'), `${t('toastOrderSuccessDesc')} <strong>${newOrder.id}</strong>`);
         navigateTo('my-orders');
@@ -1933,13 +1965,51 @@ async function handlePlaceOrder(event) {
     }
 }
 
+function normalizeEmail(email) {
+    return (email || '').trim().toLowerCase();
+}
+
+function handleOrdersEmailSubmit(event) {
+    event.preventDefault();
+    const input = document.getElementById('orders-email-input');
+    state.myOrdersEmail = normalizeEmail(input ? input.value : '');
+    renderMyOrders();
+}
+
+function clearOrdersEmail() {
+    state.myOrdersEmail = '';
+    const input = document.getElementById('orders-email-input');
+    if (input) input.value = '';
+    renderMyOrders();
+}
+
 function renderMyOrders() {
     const emptyV=document.getElementById('no-orders-view');
     const listC=document.getElementById('orders-list-view');
-    if(!emptyV||!listC) return;
-    if(state.orders.length===0){ emptyV.classList.remove('hidden'); listC.classList.add('hidden'); return; }
+    const emailV=document.getElementById('orders-email-view');
+    const emailActive=document.getElementById('orders-email-active');
+    const emailCurrent=document.getElementById('orders-email-current');
+    if(!emptyV||!listC||!emailV||!emailActive) return;
+
+    if(!state.myOrdersEmail){
+        emailV.classList.remove('hidden');
+        emailActive.classList.add('hidden');
+        emailActive.classList.remove('flex');
+        emptyV.classList.add('hidden');
+        listC.classList.add('hidden');
+        listC.innerHTML='';
+        return;
+    }
+
+    emailV.classList.add('hidden');
+    emailActive.classList.remove('hidden');
+    emailActive.classList.add('flex');
+    if(emailCurrent) emailCurrent.innerText = state.myOrdersEmail;
+
+    const matchingOrders = state.orders.filter(ord => normalizeEmail(ord.customer && ord.customer.email) === state.myOrdersEmail);
+    if(matchingOrders.length===0){ emptyV.classList.remove('hidden'); listC.classList.add('hidden'); listC.innerHTML=''; return; }
     emptyV.classList.add('hidden'); listC.classList.remove('hidden'); listC.innerHTML='';
-    state.orders.forEach(ord=>{
+    matchingOrders.forEach(ord=>{
         let statusHTML='';
         if(ord.status==='cooking') statusHTML=`<span class="bg-amber-100 text-amber-900 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-fire-burner animate-spin"></i> ${t('statusCooking')}</span>`;
         else if(ord.status==='waiting') statusHTML=`<span class="bg-blue-100 text-blue-900 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"><i class="fa-solid fa-truck-fast animate-pulse"></i> ${t('statusWaiting')}</span>`;
