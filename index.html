@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Noto+Serif+KR:wght@300;400;600&display=swap" rel="stylesheet">
+
     <!-- ================================================================
          EmailJS SDK
          보안 설정 필수: https://dashboard.emailjs.com
@@ -21,6 +22,7 @@
     <script>
         emailjs.init("c_Uqcwp1ZESf-c7hC");
     </script>
+
     <style>
         :root {
             font-family: 'Inter', 'Heebo', sans-serif;
@@ -67,6 +69,7 @@
         .analytics-chart-card { background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(15,23,42,0.06); }
         .analytics-chart-card h4 { color: #0f172a; }
         .analytics-chart-card p { color: #64748b; }
+
         /* ── Corner ornament SVG (top-left) ── */
         .corner-ornament {
             position: absolute;
@@ -79,6 +82,7 @@
         .corner-ornament.tr { top: 0; right: 0; transform: scaleX(-1); }
         .corner-ornament.bl { bottom: 0; left: 0; transform: scaleY(-1); }
         .corner-ornament.br { bottom: 0; right: 0; transform: scale(-1,-1); }
+
         /* ── Divider ornament ── */
         .ornament-divider {
             display: flex;
@@ -97,6 +101,7 @@
             height: 28px;
             flex-shrink: 0;
         }
+
         /* ── Section wrapper ── */
         .menu-section {
             max-width: 1200px;
@@ -104,6 +109,7 @@
             padding: 60px 24px;
             font-family: 'Cormorant Garamond', Georgia, serif;
         }
+
         /* ── Header ── */
         .menu-header {
             text-align: center;
@@ -157,6 +163,7 @@
             0%,100% { opacity:1; transform:scale(1); }
             50% { opacity:0.5; transform:scale(1.3); }
         }
+
         /* ── Category tabs ── */
         #category-tabs {
             display: flex;
@@ -203,6 +210,7 @@
             background: #c0293a06;
             font-weight: 600;
         }
+
         /* ── Outer frame ── */
         .menu-frame {
             position: relative;
@@ -217,12 +225,14 @@
             padding: 40px;
             min-height: 200px;
         }
+
         /* ── Menu grid ── */
         #menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 28px;
         }
+
         /* ── Card ── */
         .menu-card {
             background: var(--ivory);
@@ -249,6 +259,7 @@
         .menu-card:hover::before {
             border-color: var(--crimson-muted);
         }
+
         .card-img-wrap {
             height: 200px;
             overflow: hidden;
@@ -274,6 +285,7 @@
             transition: opacity 0.3s;
         }
         .menu-card:hover .card-img-wrap::after { opacity: 1; }
+
         .card-body {
             padding: 22px 20px 18px;
             display: flex;
@@ -321,6 +333,7 @@
             margin-bottom: 4px;
         }
         .card-unit i { color: var(--gold); font-size: 0.7rem; }
+
         .card-footer {
             margin-top: auto;
             padding-top: 14px;
@@ -352,6 +365,7 @@
         .btn-basket span { position: relative; z-index: 1; }
         .btn-basket:hover::before { transform: translateX(0); }
         .btn-basket:hover { color: #fff; }
+
         @keyframes fadeUp {
             from { opacity:0; transform:translateY(18px); }
             to   { opacity:1; transform:translateY(0); }
@@ -359,6 +373,7 @@
         .menu-card {
             animation: fadeUp 0.45s ease both;
         }
+
         @media (max-width: 640px) {
             .menu-frame-inner { padding: 20px 14px; }
             #menu-grid { grid-template-columns: 1fr; gap: 18px; }
@@ -366,6 +381,7 @@
     </style>
 </head>
 <body class="text-stone-850 min-h-screen flex flex-col antialiased">
+
     <!-- Corner ornament SVGs -->
     <svg style="display:none">
       <symbol id="corner-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -389,6 +405,7 @@
         <circle cx="16" cy="16" r="10" stroke="#c0293a" stroke-width="0.5" stroke-dasharray="2 3" opacity="0.25" fill="none"/>
       </symbol>
     </svg>
+
     <!-- HEADER -->
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-xs transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -465,6 +482,7 @@
             </div>
         </div>
     </header>
+
     <!-- MOBILE MENU -->
     <div id="mobile-menu" class="hidden md:hidden fixed inset-0 z-30 bg-stone-900/60 backdrop-blur-xs transition-opacity">
         <div class="fixed top-20 start-0 end-0 bg-white border-b border-stone-200 px-6 py-6 flex flex-col gap-4 shadow-xl">
@@ -479,6 +497,7 @@
             </button>
         </div>
     </div>
+
     <main class="flex-grow">
         <!-- MENU -->
         <section id="page-menu" class="page-section menu-section">
@@ -487,12 +506,14 @@
                 <p class="restaurant-label" id="menu-restaurant-label">반찬 · Authentic Korean Kitchen</p>
                 <h2 class="menu-title" id="menu-main-title">This Week's Fresh Menu</h2>
                 <p class="menu-subtitle" id="menu-concept-desc">Authentic Korean dishes freshly made with 100% kosher ingredients</p>
+
                 <!-- ornament divider -->
                 <div class="ornament-divider" style="margin-bottom:20px;">
                     <div class="line"></div>
                     <svg class="flower" viewBox="0 0 32 32"><use href="#flower-svg"/></svg>
                     <div class="line"></div>
                 </div>
+
                 <div style="display:flex;justify-content:center;">
                     <span class="fresh-badge">
                         <span class="pulse-dot"></span>
@@ -500,14 +521,17 @@
                     </span>
                 </div>
             </div>
+
             <!-- CATEGORY TABS -->
             <div id="category-tabs" class="flex flex-wrap items-center justify-center gap-2 mb-8"></div>
+
             <!-- ornament divider above frame -->
             <div class="ornament-divider" style="margin-bottom:18px;">
                 <div class="line" style="width:120px;"></div>
                 <svg class="flower" viewBox="0 0 32 32" style="width:20px;height:20px;"><use href="#flower-svg"/></svg>
                 <div class="line" style="width:120px;"></div>
             </div>
+
             <!-- MENU FRAME -->
             <div class="menu-frame">
                 <!-- four corners -->
@@ -515,10 +539,12 @@
                 <svg class="corner-ornament tr" viewBox="0 0 64 64"><use href="#corner-svg"/></svg>
                 <svg class="corner-ornament bl" viewBox="0 0 64 64"><use href="#corner-svg"/></svg>
                 <svg class="corner-ornament br" viewBox="0 0 64 64"><use href="#corner-svg"/></svg>
+
                 <div class="menu-frame-inner">
                     <div id="menu-grid"></div>
                 </div>
             </div>
+
             <!-- bottom ornament -->
             <div class="ornament-divider" style="margin-top:28px;">
                 <div class="line" style="width:160px;"></div>
@@ -526,6 +552,7 @@
                 <div class="line" style="width:160px;"></div>
             </div>
         </section>
+
         <!-- CHECKOUT -->
         <section id="page-checkout" class="page-section hidden max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <button onclick="navigateTo('menu')" class="flex items-center gap-2 text-stone-500 hover:text-stone-900 text-sm font-semibold mb-6">
@@ -644,6 +671,7 @@
                 </div>
             </div>
         </section>
+
         <!-- MY ORDERS -->
         <section id="page-my-orders" class="page-section hidden max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <div class="text-center max-w-2xl mx-auto mb-10">
@@ -680,6 +708,7 @@
             </div>
             <div id="orders-list-view" class="space-y-8 hidden"></div>
         </section>
+
         <!-- ADMIN -->
         <section id="page-admin" class="page-section hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <div id="admin-auth-gate" class="max-w-md mx-auto bg-white rounded-3xl border border-stone-200 shadow-xl p-8 text-center">
@@ -785,6 +814,7 @@
             <i class="fa-solid fa-plus"></i> Add New Spot
         </button>
     </div>
+
     <!-- 스팟 추가/수정 모달 -->
     <div id="spot-item-modal" class="hidden bg-stone-50 border border-stone-200 p-6 rounded-3xl space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-stone-200">
@@ -839,6 +869,7 @@
                 <label class="block font-bold text-stone-700 mb-1">הוראות (Hebrew)</label>
                 <textarea id="spot-instructions-he" rows="2" dir="rtl" placeholder="e.g. חפשו רכב שטח כסוף עם צידניות כתומות." class="w-full bg-white border border-stone-300 rounded-lg p-2.5 resize-none"></textarea>
             </div>
+
             <!-- 픽업 날짜/시간 슬롯 -->
             <div class="md:col-span-2">
                 <label class="block font-bold text-stone-700 mb-2">Pickup Days</label>
@@ -856,6 +887,7 @@
             <button type="button" onclick="handleSaveSpot()" class="px-5 py-2.5 bg-amber-800 hover:bg-amber-900 text-white rounded-xl font-bold text-xs transition-all">Save Spot</button>
         </div>
     </div>
+
     <!-- 스팟 목록 -->
     <div id="admin-spots-list" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
     <div id="admin-spots-empty" class="hidden p-12 text-center bg-white border border-dashed border-stone-300 rounded-3xl">
@@ -959,10 +991,12 @@
             </div>
         </section>
     </main>
+
     <div id="cloud-sync-banner" class="hidden fixed bottom-20 start-4 end-4 sm:start-auto sm:end-6 sm:max-w-md z-40 bg-amber-950 text-amber-50 text-xs font-semibold px-4 py-3 rounded-xl shadow-lg border border-amber-800">
         <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>
         <span id="cloud-sync-banner-text">Set Supabase URL &amp; key in CONFIG for cross-device sync.</span>
     </div>
+
     <!-- CART SIDEBAR -->
     <div id="cart-sidebar" class="fixed inset-0 z-50 pointer-events-none hidden">
         <div class="absolute inset-0 bg-stone-950/40 backdrop-blur-xs pointer-events-auto" onclick="toggleCart()"></div>
@@ -990,6 +1024,7 @@
             </div>
         </div>
     </div>
+
     <!-- TOAST -->
     <div id="custom-toast" class="fixed bottom-6 start-6 z-50 hidden max-w-sm w-full bg-white rounded-2xl border border-stone-200/80 shadow-2xl p-4 transition-all duration-300 transform translate-y-10 opacity-0 flex items-start gap-3">
         <div class="bg-amber-100 text-amber-900 p-2.5 rounded-xl text-sm" id="toast-icon-box"><i class="fa-solid fa-circle-check" id="toast-icon"></i></div>
@@ -999,6 +1034,7 @@
         </div>
         <button onclick="hideToast()" class="text-stone-400 hover:text-stone-600 p-4"><i class="fa-solid fa-xmark text-sm"></i></button>
     </div>
+
     <!-- FAQ WIDGET -->
     <div class="fixed bottom-6 end-6 z-50 flex flex-col items-end gap-3">
         <div id="faq-panel" class="hidden max-w-sm w-screen sm:w-[420px] bg-white rounded-3xl border border-stone-200/80 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 transform translate-y-6 opacity-0 max-h-[75vh]">
@@ -1014,6 +1050,7 @@
             <i class="fa-solid fa-circle-question text-2xl" id="faq-trigger-icon"></i>
         </button>
     </div>
+
     <!-- RECOMMENDATION MODAL -->
     <div id="recommendation-modal" class="fixed inset-0 z-55 bg-stone-950/60 backdrop-blur-sm flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0">
         <div class="bg-white rounded-[2rem] border border-stone-200 shadow-2xl max-w-lg w-full overflow-hidden transform scale-95 transition-transform duration-300" id="recommendation-card">
@@ -1034,6 +1071,7 @@
             </div>
         </div>
     </div>
+
     <!-- FOOTER -->
     <footer class="bg-stone-950 text-stone-400 py-12 border-t border-stone-850">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1068,19 +1106,23 @@
             </div>
         </div>
     </footer>
+
 <script>
 // ================================================================
 // ⚙️  CONFIGURATION — 배포 전 여기만 수정하세요
 // ================================================================
+
 // 1. Google Sheets 연동 URL
 //    설정 방법: 아래 SETUP_GUIDE.md 참고
 //    Apps Script를 배포하면 생기는 Web App URL을 여기에 붙여넣으세요
 const GOOGLE_SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxnaQzrJdApyyVVWKQZy-GFeYG2B32ZaASwkXdR1inSVY57YkJXVMjryRCr29NfbhHevA/exec';
+
 // 2. EmailJS 설정 (이미 위에서 초기화됨)
 //    EmailJS 대시보드 → Account → API Keys → Allowed Origins에 배포 도메인 추가 필수
 const EMAILJS_SERVICE_ID = "BANCHAN";
 const EMAILJS_CUSTOMER_TEMPLATE = "template_l9fkqtv";
 const EMAILJS_ADMIN_TEMPLATE = "template_lcvz4wc";
+
 // 3. Admin 인증 정보 (SHA-256 해시 — 평문 비밀번호 없음)
 // 아래 해시값은 다음 비밀번호에 해당합니다:
 //   ysyoo2006 / ysyoo20060716
@@ -1096,27 +1138,33 @@ const ADMIN_CREDENTIALS = [
         pwHash:   '4eeb8098c5cca924a8a48b6cfc36c847366496387bd105505e9bf6de65ca96a4'  // whenwemoms
     }
 ];
+
 // 로그인 시도 제한 설정
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 30000; // 30초
+
 // 4. Supabase 클라우드 동기화 (모든 브라우저·기기 공유) — supabase.com 프로젝트 설정 후 입력
 //    SQL: BANCHAN-supabase-sync.sql 파일을 Supabase SQL Editor에서 실행
 const SUPABASE_URL = 'https://vixodfppiujmvkobarsz.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_q1V6exXc7Ej5Ifjsfzpetw_elhEPtNy';
 const SUPABASE_STORAGE_BUCKET = 'menu-images';
 const CLOUD_POLL_INTERVAL_MS = 8000;
+
 // localStorage 키 (오프라인 캐시 + 같은 브라우저 탭 간 공유)
 const ORDERS_STORAGE_KEY = 'banchan_orders_jerusalem';
 const MENU_STORAGE_KEY = 'banchan_menu';
 const SPOTS_STORAGE_KEY = 'banchan_spots';
 const SYNC_KEYS = { MENU: 'menu', ORDERS: 'orders', SPOTS: 'spots' };
+
 let supabaseClient = null;
 let cloudSyncTimestamps = { menu: 0, orders: 0, spots: 0 };
 let cloudPollTimer = null;
 let cloudSaveInProgress = false;
+
 // ================================================================
 // 데이터 & 상태
 // ================================================================
+
 const DEFAULT_MENU_ITEMS = [
     { id:'item-kimchi-1', category:'kimchi', price:35, unit:'500g', image:'https://images.unsplash.com/photo-1582968413695-17a42167d3cc?q=80&w=600&auto=format&fit=crop', translations:{ en:{name:'Fresh Napa Cabbage Kimchi',description:"Crispy, fresh Napa cabbage mixed with chef's signature Korean chili flakes. Perfect tableside accompaniment.",badge:'Popular'}, he:{name:"קימצ'י כרוב סיני טרי",description:"כרוב סיני פריך וטרי בתיבול רוטב צ'ילי קוריאני מסורתי של השף. שילוב מושלם לכל ארוחה.",badge:'פופולרי'} } },
     { id:'item-kimchi-2', category:'kimchi', price:28, unit:'400g', image:'https://images.unsplash.com/photo-1541832676-9b763b0239ab?q=80&w=600&auto=format&fit=crop', translations:{ en:{name:'Stuffed Cucumber Kimchi',description:'Crispy cucumbers stuffed with chives and refreshing garlic-spiced seasoning. Great for hot Jerusalem days.',badge:''}, he:{name:"קימצ'י מלפפון ממולא",description:'מלפפונים פריכים ממולאים בעירית, שום ותבלינים קוריאניים מרעננים. מעולה לימים החמים בירושלים.',badge:''} } },
@@ -1127,12 +1175,14 @@ const DEFAULT_MENU_ITEMS = [
     { id:'item-side-3', category:'side', price:27, unit:'180g', image:'https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=600&auto=format&fit=crop', translations:{ en:{name:'Spicy Dried Squid Strips',description:'Chewy shredded dried squid glazed in sweet, savory, and spicy gochujang sauce. Extremely addictive with steamed rice.',badge:''}, he:{name:'רצועות דיונון מיובש חריף',description:'רצועות דיונון מיובש לעיסות ברוטב גוצ\'וג\'אנג מתוק וחריף. תוספת מושלמת וממכרת לצד אורז חם.',badge:''} } },
     { id:'item-soup-1', category:'soup', price:30, unit:'600g', image:'https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=600&auto=format&fit=crop', translations:{ en:{name:'Beef Seaweed Soup',description:'Deeply comforting, nutritious soup simmered for hours with premium seaweed and beef. Traditional celebratory soup.',badge:'Healthy'}, he:{name:'מרק אצות קוריאני עם בקר',description:'מרק מזין ומנחם שבושל שעות ארוכות עם אצות ים מובחרות ונתחי בקר. מרק מסורתי עשיר בטעמים.',badge:'בריא'} } }
 ];
+
 const DEFAULT_PICKUP_SPOTS = [
     { id:'hebrew-university', translations:{ en:{name:'Hebrew University (Mt. Scopus)',sub:'Mt. Scopus campus, Hebrew U',spot:'Student Union building main front roundabout entrance area',time:'Tuesdays & Fridays: 12:00 - 13:30',instructions:'Look for the silver SUV car with orange food cooler bags.'}, he:{name:'האוניברסיטה העברית (הר הצופים)',sub:'קמפוס הר הצופים, האוניברסיטה העברית',spot:'אזור הכיכר הראשית מחוץ לבניין אגודת הסטודנטים',time:'ימי שלישי ושישי: 12:00 - 13:30',instructions:'חפשו רכב שטח כסוף עם צידניות מזון כתומות.'} }, times:['12:00','12:30','13:00','13:30'] },
     { id:'jaffa-gate', translations:{ en:{name:'Old City Jaffa Gate',sub:'Jaffa Gate, Old City',spot:'Tourist Information office courtyard main square entrance',time:'Tuesdays & Fridays: 15:00 - 16:30',instructions:'Please remain outside the security checkpoint; look for our dispatcher.'}, he:{name:'שער יפו (העיר העתיקה)',sub:'שער יפו, העיר העתיקה',spot:'כיכר הכניסה ליד משרד המידע לתיירים',time:'ימי שלישי ושישי: 15:00 - 16:30',instructions:'אנא המתינו מחוץ לעמדת הבידוק הבטחוני וחפשו את הנציג שלנו.'} }, times:['15:00','15:30','16:00','16:30'] },
     { id:'emek-refaim', translations:{ en:{name:'Emek Refaim (German Colony)',sub:'Emek Refaim Street',spot:'In front of Aroma Espresso Bar, outdoor seating area',time:'Tuesdays & Fridays: 17:00 - 18:00',instructions:'Excellent walkable location for German Colony residents.'}, he:{name:'עמק רפאים (המושבה הגרמנית)',sub:'רחוב עמק רפאים',spot:'בחזית ארומה אספרסו בר, אזור הישיבה החיצוני',time:'ימי שלישי ושישי: 17:00 - 18:00',instructions:'נקודה נוחה ונגישה להולכי רגל ותושבי המושבה הגרמנית.'} }, times:['17:00','17:30','18:00'] },
     { id:'central-bus-station', translations:{ en:{name:'Central Bus Station (CBS)',sub:'Jaffa Street CBS',spot:'Main entrance gate sidewalk, adjacent to the taxi rank zone',time:'Tuesdays & Fridays: 18:30 - 19:30',instructions:'Perfect for clients commuting via transit and light rail.'}, he:{name:'התחנה המרכזית (יפו)',sub:'רחוב יפו, ליד התחנה המרכזית',spot:'מדרכת שער הכניסה הראשי, בסמוך לתחנת המוניות',time:'ימי שלישי ושישי: 18:30 - 19:30',instructions:'נקודה מעולה ומהירה למגיעים ברכבת הקלה או באוטובוסים.'} }, times:['18:30','19:00','19:30'] }
 ];
+
 const LOCALIZATION = {
     en: {
         navSubtitle:'Jerusalem', navMenu:'Menu', navOrders:'My Orders',
@@ -1235,6 +1285,7 @@ const LOCALIZATION = {
         checkoutOptBitnowTitle:'ביט / העברה בנקאית', checkoutOptBitnowDesc:'שלח ביט או העברה בנקאית לאחר ההזמנה. אישור יישלח לאיימייל.',
     }
 };
+
 // ================================================================
 // STATE
 // ================================================================
@@ -1247,6 +1298,7 @@ let state = {
     temporaryUploadedImageBase64: '',
     loginAttempts: 0, lockoutUntil: 0
 };
+
 // ================================================================
 // SHA-256 해시 (Web Crypto API — 브라우저 네이티브, 라이브러리 불필요)
 // ================================================================
@@ -1256,6 +1308,7 @@ async function sha256(message) {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
+
 // ================================================================
 // GOOGLE SHEETS 주문 저장
 // ================================================================
@@ -1294,17 +1347,20 @@ async function saveOrderToSheets(order) {
         return false;
     }
 }
+
 // ================================================================
 // Supabase 클라우드 동기화 (브라우저·기기 간 통일)
 // ================================================================
 function isCloudSyncEnabled() {
     return !!(SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes('YOUR_') && typeof supabase !== 'undefined');
 }
+
 function getSupabaseClient() {
     if (!isCloudSyncEnabled()) return null;
     if (!supabaseClient) supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     return supabaseClient;
 }
+
 function updateCloudSyncBadge(active, text) {
     const badge = document.getElementById('cloud-sync-badge');
     const badgeText = document.getElementById('cloud-sync-badge-text');
@@ -1318,6 +1374,7 @@ function updateCloudSyncBadge(active, text) {
         else { banner.classList.remove('hidden'); const bt = document.getElementById('cloud-sync-banner-text'); if (bt) bt.textContent = text || 'Supabase를 설정하면 Chrome·Safari·휴대폰에서 데이터가 동기화됩니다.'; }
     }
 }
+
 function refreshUIAfterCloudSync() {
     syncCartWithMenu();
     renderCategoryTabs();
@@ -1334,6 +1391,7 @@ function refreshUIAfterCloudSync() {
         else if (state.currentAdminTab === 'analytics') renderAdminAnalytics();
     }
 }
+
 function applyCloudData(key, data, fromRemote) {
     if (!data) return false;
     if (key === SYNC_KEYS.MENU && Array.isArray(data)) {
@@ -1353,6 +1411,7 @@ function applyCloudData(key, data, fromRemote) {
     }
     return false;
 }
+
 async function cloudUpsert(key, payload) {
     const sb = getSupabaseClient();
     if (!sb) return false;
@@ -1361,6 +1420,7 @@ async function cloudUpsert(key, payload) {
     if (data && data.updated_at) cloudSyncTimestamps[key] = new Date(data.updated_at).getTime();
     return true;
 }
+
 async function uploadMenuImageIfNeeded(itemId, imageSrc) {
     if (!imageSrc || !String(imageSrc).startsWith('data:')) return imageSrc;
     const sb = getSupabaseClient();
@@ -1379,6 +1439,7 @@ async function uploadMenuImageIfNeeded(itemId, imageSrc) {
         return imageSrc;
     }
 }
+
 async function prepareMenuForCloud(menuItems) {
     const out = [];
     for (const item of menuItems) {
@@ -1388,6 +1449,7 @@ async function prepareMenuForCloud(menuItems) {
     }
     return out;
 }
+
 async function cloudPushMenu() {
     if (!isCloudSyncEnabled() || cloudSaveInProgress) return;
     cloudSaveInProgress = true;
@@ -1398,14 +1460,17 @@ async function cloudPushMenu() {
         await cloudUpsert(SYNC_KEYS.MENU, prepared);
     } finally { cloudSaveInProgress = false; }
 }
+
 async function cloudPushOrders() {
     if (!isCloudSyncEnabled()) return;
     await cloudUpsert(SYNC_KEYS.ORDERS, state.orders);
 }
+
 async function cloudPushSpots() {
     if (!isCloudSyncEnabled()) return;
     await cloudUpsert(SYNC_KEYS.SPOTS, state.pickupSpots);
 }
+
 async function pullFromCloud(force) {
     const sb = getSupabaseClient();
     if (!sb) return false;
@@ -1426,6 +1491,7 @@ async function pullFromCloud(force) {
         return false;
     }
 }
+
 async function seedCloudIfEmpty() {
     const sb = getSupabaseClient();
     if (!sb) return;
@@ -1435,10 +1501,12 @@ async function seedCloudIfEmpty() {
     if (!keys.includes(SYNC_KEYS.ORDERS)) await cloudUpsert(SYNC_KEYS.ORDERS, state.orders);
     if (!keys.includes(SYNC_KEYS.SPOTS)) await cloudUpsert(SYNC_KEYS.SPOTS, state.pickupSpots);
 }
+
 function startCloudPolling() {
     if (cloudPollTimer) clearInterval(cloudPollTimer);
     cloudPollTimer = setInterval(function() { pullFromCloud(false); }, CLOUD_POLL_INTERVAL_MS);
 }
+
 function setupSupabaseRealtime() {
     const sb = getSupabaseClient();
     if (!sb || !sb.channel) return;
@@ -1453,6 +1521,7 @@ function setupSupabaseRealtime() {
         })
         .subscribe();
 }
+
 function setupMobileSyncHandlers() {
     // 1. 탭 다시 포커스될 때 즉시 pull (모바일에서 앱 전환 후 돌아올 때)
     document.addEventListener('visibilitychange', function() {
@@ -1460,12 +1529,14 @@ function setupMobileSyncHandlers() {
             pullFromCloud(false);
         }
     });
+
     // 2. 네트워크 재연결 시 즉시 pull (모바일 와이파이 전환 등)
     window.addEventListener('online', function() {
         pullFromCloud(true);
         // Realtime 재연결
         setupSupabaseRealtime();
     });
+
     // 3. 모바일에서 polling 간격을 더 짧게 (5초)
     //    기존 CLOUD_POLL_INTERVAL_MS(8000)보다 빠르게
     if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
@@ -1475,6 +1546,7 @@ function setupMobileSyncHandlers() {
         }, 5000);
     }
 }
+
 async function initCloudSync() {
     if (!isCloudSyncEnabled()) {
         updateCloudSyncBadge(false);
@@ -1489,6 +1561,7 @@ async function initCloudSync() {
         setupMobileSyncHandlers(); // 모바일 대응 추가
     }
 }
+
 // ================================================================
 // 저장소 헬퍼 (메뉴·주문·픽업 영속화 + 탭 간 동기화)
 // ================================================================
@@ -1499,6 +1572,7 @@ function normalizeMenuItem(item, def) {
     if (item.stock !== null && item.stock !== undefined) item.stock = Math.max(0, parseInt(item.stock, 10));
     return item;
 }
+
 function mergeMenuWithDefaults(savedItem) {
     const def = DEFAULT_MENU_ITEMS.find(d => d.id === savedItem.id);
     if (def) {
@@ -1515,6 +1589,7 @@ function mergeMenuWithDefaults(savedItem) {
     }
     return normalizeMenuItem(savedItem, def);
 }
+
 function loadMenuItems() {
     const savedMenu = JSON.parse(localStorage.getItem(MENU_STORAGE_KEY));
     if (savedMenu && Array.isArray(savedMenu)) {
@@ -1523,17 +1598,20 @@ function loadMenuItems() {
         state.menuItems = DEFAULT_MENU_ITEMS.map(it => normalizeMenuItem({ ...it }, it));
     }
 }
+
 function saveMenuItems() {
     localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(state.menuItems));
     if (isCloudSyncEnabled()) cloudPushMenu().then(function() { renderMenu(); renderAdminMenuList(); }).catch(function(e) { console.error('Cloud menu save', e); showToast('Cloud Sync', 'Menu saved locally; cloud upload failed.', true); });
     return true;
 }
+
 function syncCartWithMenu() {
     state.cart.forEach(it => {
         const latest = state.menuItems.find(m => m.id === it.product.id);
         if (latest) it.product = latest;
     });
 }
+
 function loadOrders() {
     let saved = localStorage.getItem(ORDERS_STORAGE_KEY);
     if (!saved) {
@@ -1545,6 +1623,7 @@ function loadOrders() {
     }
     if (saved) state.orders = JSON.parse(saved);
 }
+
 function saveOrders() {
     try {
         localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(state.orders));
@@ -1555,48 +1634,60 @@ function saveOrders() {
         return false;
     }
 }
+
 function slimProductForStorage(product) {
     if (!product) return product;
     const img = product.image && String(product.image).startsWith('data:') ? '' : (product.image || '');
     return { id: product.id, category: product.category, price: product.price, unit: product.unit, image: img, translations: product.translations };
 }
+
 function slimCartForStorage(cart) {
     return cart.map(it => ({ product: slimProductForStorage(it.product), quantity: it.quantity }));
 }
+
 function isPickupComplete(ord) {
     return ord.status === 'picked_up' || ord.status === 'delivered';
 }
+
 function resetCheckoutSubmitButton() {
     const submitBtn = document.getElementById('checkout-btn-submit');
     if (!submitBtn) return;
     submitBtn.disabled = false;
     updatePaymentButtonText();
 }
+
 function getMinOrderQty(product) {
     return Math.max(1, product.minOrderQty || 1);
 }
+
 function isUnlimitedStock(product) {
     return product.stock === null || product.stock === undefined;
 }
+
 function getCartQtyForProduct(productId) {
     const inCart = state.cart.find(c => c.product.id === productId);
     return inCart ? inCart.quantity : 0;
 }
+
 function getAvailableStock(product) {
     if (isUnlimitedStock(product)) return Infinity;
     return Math.max(0, product.stock - getCartQtyForProduct(product.id));
 }
+
 function isOutOfStock(product) {
     return !isUnlimitedStock(product) && product.stock <= 0;
 }
+
 function formatMsg(key, vars) {
     let msg = t(key);
     Object.keys(vars).forEach(k => { msg = msg.replace(`{${k}}`, vars[k]); });
     return msg;
 }
+
 function getProductName(product) {
     return product.translations[state.language]?.name || product.translations.en.name;
 }
+
 function validateCartItemQuantity(product, totalQty) {
     const minQ = getMinOrderQty(product);
     if (totalQty > 0 && totalQty < minQ) {
@@ -1607,6 +1698,7 @@ function validateCartItemQuantity(product, totalQty) {
     }
     return { ok: true };
 }
+
 function validateEntireCart() {
     for (const it of state.cart) {
         const check = validateCartItemQuantity(it.product, it.quantity);
@@ -1614,6 +1706,7 @@ function validateEntireCart() {
     }
     return { ok: true };
 }
+
 function deductStockFromOrder(cart) {
     cart.forEach(it => {
         const menuItem = state.menuItems.find(m => m.id === it.product.id);
@@ -1623,6 +1716,7 @@ function deductStockFromOrder(cart) {
     });
     saveMenuItems();
 }
+
 function setupStorageSync() {
     window.addEventListener('storage', (e) => {
         if (e.key === ORDERS_STORAGE_KEY && e.newValue) {
@@ -1646,6 +1740,7 @@ function setupStorageSync() {
         }
     });
 }
+
 // ================================================================
 // INIT
 // ================================================================
@@ -1655,13 +1750,16 @@ window.onload = async function() {
     state.pickupSpots = JSON.parse(localStorage.getItem(SPOTS_STORAGE_KEY)) || DEFAULT_PICKUP_SPOTS;
     loadOrders();
     state.isAdminAuthenticated = sessionStorage.getItem('banchan_admin_auth') === 'true';
+
     window.addEventListener('hashchange', handleHashRouting);
     setupStorageSync();
     handleHashRouting();
     setupDateLimits();
     setLanguage('en');
+
     await initCloudSync();
 };
+
 function handleHashRouting() {
     const hash = window.location.hash;
     const path = window.location.pathname;
@@ -1670,7 +1768,9 @@ function handleHashRouting() {
     else if (hash === '#my-orders') navigateTo('my-orders');
     else navigateTo('menu');
 }
+
 function t(key) { return LOCALIZATION[state.language][key] || key; }
+
 function setLanguage(lang) {
     state.language = lang;
     const html = document.documentElement;
@@ -1719,18 +1819,21 @@ function setLanguage(lang) {
     else if (state.currentTab === 'admin') renderAdminView();
     populateLocationSelect();
 }
+
 function getCheckoutTotalPrice() {
     let total = state.cart.reduce((s,it) => s + it.product.price * it.quantity, 0);
     const cb = document.getElementById('disposable-utensils');
     if (cb && cb.checked) total += 5;
     return total;
 }
+
 function updatePaymentButtonText() {
     const el = document.getElementById('checkout-btn-submit-text');
     if (!el) return;
     const total = getCheckoutTotalPrice();
     el.innerHTML = `${t('checkoutBtnSubmit')} <span class="bg-white/20 px-2.5 py-0.5 rounded-lg text-white font-extrabold mx-1">₪${total}</span>`;
 }
+
 function navigateTo(tabId) {
     state.currentTab = tabId;
     document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
@@ -1742,12 +1845,14 @@ function navigateTo(tabId) {
     else if (tabId === 'checkout') renderCheckoutSummary();
     window.scrollTo({top:0, behavior:'smooth'});
 }
+
 function toggleMobileMenu() {
     const menu = document.getElementById('mobile-menu');
     const icon = document.getElementById('menu-icon');
     if (menu.classList.contains('hidden')) { menu.classList.remove('hidden'); icon.className='fa-solid fa-xmark text-xl'; }
     else { menu.classList.add('hidden'); icon.className='fa-solid fa-bars text-xl'; }
 }
+
 function renderCategoryTabs() {
     const c = document.getElementById('category-tabs'); c.innerHTML='';
     [['all','catAll'],['kimchi','catKimchi'],['main','catMain'],['side','catSide'],['soup','catSoup']].forEach(([key,lk]) => {
@@ -1758,6 +1863,7 @@ function renderCategoryTabs() {
         c.appendChild(btn);
     });
 }
+
 let menuQtyHolders = {};
 function renderMenu() {
     const grid = document.getElementById('menu-grid'); if(!grid) return; grid.innerHTML='';
@@ -1810,6 +1916,7 @@ function renderMenu() {
         grid.appendChild(card);
     });
 }
+
 function adjustLocalQty(id, offset) {
     const product = state.menuItems.find(it => it.id === id);
     if (!product) return;
@@ -1828,6 +1935,7 @@ function adjustLocalQty(id, offset) {
     const el = document.getElementById(`qty-holder-${id}`);
     if (el) el.innerText = menuQtyHolders[id];
 }
+
 function renderFooterLocations() {
     const fl = document.getElementById('footer-locations-list'); if(!fl) return; fl.innerHTML='';
     state.pickupSpots.forEach(spot => {
@@ -1837,6 +1945,7 @@ function renderFooterLocations() {
         fl.appendChild(li);
     });
 }
+
 function toggleCart() {
     const sidebar = document.getElementById('cart-sidebar');
     const drawer = document.getElementById('cart-drawer');
@@ -1848,6 +1957,7 @@ function toggleCart() {
         setTimeout(()=>sidebar.classList.add('hidden'),300);
     }
 }
+
 function addToCart(itemId) {
     const product = state.menuItems.find(it=>it.id===itemId);
     if (!product || isOutOfStock(product)) return;
@@ -1872,6 +1982,7 @@ function addToCart(itemId) {
     updateCartUI();
     showToast(t('toastAdded'), `<strong>${getProductName(product)}</strong> (${quantity}) ${t('toastAddedDesc')}`);
 }
+
 function adjustCartQty(itemId, dir) {
     const item = state.cart.find(it=>it.product.id===itemId);
     if (!item) return;
@@ -1893,6 +2004,7 @@ function adjustCartQty(itemId, dir) {
     item.product = menuItem;
     updateCartUI();
 }
+
 function updateCartUI() {
     const c = document.getElementById('cart-items-container');
     const badge = document.getElementById('cart-badge');
@@ -1921,12 +2033,14 @@ function updateCartUI() {
             <div class="flex items-center justify-between"><div class="flex items-center border border-stone-200 bg-white rounded-lg overflow-hidden"><button onclick="adjustCartQty('${it.product.id}',-1)" class="px-2 py-1 text-stone-500 hover:bg-stone-100 transition-colors"><i class="fa-solid fa-minus text-[9px]"></i></button><span class="px-2 text-xs font-black text-stone-800 w-6 text-center">${it.quantity}</span><button onclick="adjustCartQty('${it.product.id}',1)" class="px-2 py-1 text-stone-500 hover:bg-stone-100 transition-colors"><i class="fa-solid fa-plus text-[9px]"></i></button></div><span class="font-black text-stone-900 text-xs">₪${p}</span></div></div>`;
             c.appendChild(row);
         });
+
         const minMet = subtotal >= MINIMUM_ORDER_AMOUNT;
         if (checkoutBtn) {
             checkoutBtn.disabled = !minMet;
             if (minMet) checkoutBtn.classList.remove('opacity-40','cursor-not-allowed');
             else checkoutBtn.classList.add('opacity-40','cursor-not-allowed');
         }
+
         let minBanner = document.getElementById('cart-min-order-banner');
         if (!minBanner && checkoutBtn && checkoutBtn.parentElement) {
             minBanner = document.createElement('div');
@@ -1950,9 +2064,12 @@ function updateCartUI() {
     }
     if (grandTotal) grandTotal.innerText=`₪${subtotal}`;
 }
+
 const MINIMUM_ORDER_AMOUNT = 50; // ₪
+
 function goToCheckout() {
     if (state.cart.length === 0) { showToast(t('toastCartEmpty'), t('toastCartEmptyDesc'), true); return; }
+
     // 최소 주문 금액 체크
     const subtotal = state.cart.reduce((s, it) => s + it.product.price * it.quantity, 0);
     if (subtotal < MINIMUM_ORDER_AMOUNT) {
@@ -1965,6 +2082,7 @@ function goToCheckout() {
         );
         return;
     }
+
     const cartCheck = validateEntireCart();
     if (!cartCheck.ok) {
         const p = cartCheck.item.product;
@@ -1978,6 +2096,7 @@ function goToCheckout() {
     toggleCart();
     openRecommendationModal();
 }
+
 function openRecommendationModal() {
     const modal=document.getElementById('recommendation-modal');
     const card=document.getElementById('recommendation-card');
@@ -2005,6 +2124,7 @@ function openRecommendationModal() {
     modal.classList.remove('hidden');
     setTimeout(()=>{ modal.classList.remove('opacity-0'); card.classList.remove('scale-95'); },50);
 }
+
 function addRecommendationToCart(itemId) {
     const product=state.menuItems.find(it=>it.id===itemId); if(!product || isOutOfStock(product)) return;
     menuQtyHolders[itemId] = getMinOrderQty(product);
@@ -2013,15 +2133,18 @@ function addRecommendationToCart(itemId) {
     const btn=document.getElementById(`rec-add-btn-${itemId}`);
     if(btn){ btn.className='px-3.5 py-2 bg-emerald-100 text-emerald-800 font-bold text-[10px] rounded-xl cursor-default flex items-center gap-1 shrink-0'; btn.disabled=true; btn.onclick=null; btn.innerHTML=`<i class="fa-solid fa-circle-check"></i> <span>${t('recAddedBadge')}</span>`; }
 }
+
 function closeRecommendationModal(go) {
     const modal=document.getElementById('recommendation-modal');
     const card=document.getElementById('recommendation-card');
     modal.classList.add('opacity-0'); card.classList.add('scale-95');
     setTimeout(()=>{ modal.classList.add('hidden'); if(go) navigateTo('checkout'); else document.getElementById('page-menu')?.classList.remove('hidden'); },300);
 }
+
 function setupDateLimits() {
     // 날짜 제한은 updatePickupTimeOptions()에서 스팟 선택 시 동적으로 처리
 }
+
 function populateLocationSelect() {
     const select=document.getElementById('pickup-location'); if(!select) return;
     const prev=select.value; select.innerHTML='';
@@ -2036,12 +2159,14 @@ function populateLocationSelect() {
     if (dateInput) dateInput.value = '';
     updatePickupTimeOptions(select.value);
 }
+
 function updatePickupTimeOptions(spotId) {
     const ts = document.getElementById('pickup-time');
     const helper = document.getElementById('pickup-location-tip');
     const dateInput = document.getElementById('pickup-date');
     if (!ts) return;
     ts.innerHTML = '';
+
     const spot = state.pickupSpots.find(s => s.id === spotId);
     if (!spot) {
         ts.innerHTML = `<option value="" disabled selected>${t('timeSelectPlaceholder')}</option>`;
@@ -2055,21 +2180,25 @@ function updatePickupTimeOptions(spotId) {
         }
         return;
     }
+
     const tr = spot.translations[state.language] || spot.translations['en'];
     if (helper) {
         helper.innerHTML = `<i class="fa-solid fa-map-location-dot mr-1.5 rtl:ml-1.5 text-amber-800"></i> ${tr.spot} (${tr.time})`;
         helper.classList.remove('hidden');
     }
+
     // 스팟에 설정된 허용 요일 (days 배열)
     // days가 없으면 기존 DEFAULT_PICKUP_SPOTS처럼 화/금만 허용
     const allowedDays = (spot.days && spot.days.length > 0)
         ? spot.days.map(d => ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].indexOf(d))
         : [2, 5]; // 기본값: 화요일(2), 금요일(5)
+
     // 날짜 input 제한 적용
     if (dateInput) {
         dateInput.value = '';
         applyDateRestrictions(dateInput, allowedDays);
     }
+
     // 시간 슬롯
     spot.times.forEach(tv => {
         const opt = document.createElement('option');
@@ -2077,8 +2206,10 @@ function updatePickupTimeOptions(spotId) {
         ts.appendChild(opt);
     });
 }
+
 function applyDateRestrictions(dateInput, allowedDayIndices) {
     const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
     // 오늘 이후 가장 가까운 허용 요일 날짜를 min으로 설정
     function getNextAllowedDate(fromDate) {
         const d = new Date(fromDate);
@@ -2090,9 +2221,11 @@ function applyDateRestrictions(dateInput, allowedDayIndices) {
         }
         return d;
     }
+
     const nextAllowed = getNextAllowedDate(new Date());
     dateInput.min = fmt(nextAllowed);
     dateInput.value = ''; // 스팟 바뀌면 날짜 초기화
+
     // 선택 후 요일 검사 (직접 타이핑 입력 방어)
     dateInput.onchange = function() {
         if (!this.value) return;
@@ -2108,12 +2241,15 @@ function applyDateRestrictions(dateInput, allowedDayIndices) {
             this.value = fmt(corrected);
         }
     };
+
     // 힌트 텍스트 업데이트
     const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const allowedShort = allowedDayIndices.map(i => dayNames[i]).join(' / ');
     const noteEl = document.getElementById('checkout-date-note');
     if (noteEl) noteEl.innerHTML = `* Only available on: <strong class="text-amber-800">${allowedShort}</strong>`;
 }
+
+
 function renderCheckoutSummary() {
     const list=document.getElementById('checkout-items-list'); if(!list) return; list.innerHTML='';
     let sum=0;
@@ -2130,6 +2266,7 @@ function renderCheckoutSummary() {
     document.getElementById('checkout-total-price').innerText=`₪${sum}`;
     updatePaymentButtonText();
 }
+
 // ================================================================
 // 주문 처리 (Google Sheets + EmailJS)
 // ================================================================
@@ -2150,7 +2287,9 @@ async function handlePlaceOrder(event) {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Processing...</span>';
     }
+
     const cartSnapshot = state.cart.map(it => ({ product: { ...it.product, translations: { en: { ...it.product.translations.en }, he: { ...(it.product.translations.he || {}) } } }, quantity: it.quantity }));
+
     try {
         const locationKey = document.getElementById('pickup-location').value;
         const pDate = document.getElementById('pickup-date').value;
@@ -2162,9 +2301,11 @@ async function handlePlaceOrder(event) {
         const paymentMethod = document.querySelector('input[name="payment-method"]:checked')?.value || 'cash';
         const spotObj = state.pickupSpots.find(s => s.id === locationKey);
         if (!spotObj) throw new Error('Invalid pickup location');
+
         const dateObj = new Date(pDate);
         const days = state.language === 'he' ? ["א'","ב'","ג'","ד'","ה'","ו'","ש'"] : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
         const orderTotal = getCheckoutTotalPrice();
+
         const newOrder = {
             id: 'BA-' + Math.floor(100000 + Math.random() * 900000),
             customer: { name, email, memo, disposableUtensils: disposableChecked },
@@ -2174,6 +2315,7 @@ async function handlePlaceOrder(event) {
             timestamp: new Date().toLocaleDateString(state.language === 'he' ? 'he-IL' : 'en-US'),
             createdAt: new Date().toISOString()
         };
+
         const cartFormatted = cartSnapshot.map(it => `${it.product.translations.en.name} (${it.product.unit}) x${it.quantity} - ₪${it.product.price * it.quantity}`).join('\n');
         const emailOrders = cartSnapshot.map(it => ({ name: it.product.translations.en.name, units: it.quantity, price: it.product.price * it.quantity }));
         if (disposableChecked) emailOrders.push({ name: 'Disposable Utensils Pack', units: 1, price: 5 });
@@ -2184,16 +2326,19 @@ async function handlePlaceOrder(event) {
             payment_method: t('pay_' + paymentMethod), disposable_utensils: disposableChecked ? 'Yes' : 'No',
             total_amount: orderTotal, 'cost.total': orderTotal, admin_memo: memo || 'None'
         };
+
         emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_CUSTOMER_TEMPLATE, emailParams).catch(e => console.error('Customer email error:', e));
         emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_ADMIN_TEMPLATE, emailParams).catch(e => console.error('Admin email error:', e));
         saveOrderToSheets(newOrder).then(sheetsSaved => {
             if (sheetsSaved) setTimeout(() => showToast(t('toastOrderSaved'), 'Google Sheets ✓'), 2500);
         }).catch(() => {});
+
         deductStockFromOrder(cartSnapshot);
         state.orders.unshift(newOrder);
         if (!saveOrders()) {
             showToast('Storage Warning', 'Order placed but local save failed. Email was still sent.', true);
         }
+
         state.cart = [];
         const disposableEl = document.getElementById('disposable-utensils');
         if (disposableEl) disposableEl.checked = false;
@@ -2202,6 +2347,7 @@ async function handlePlaceOrder(event) {
         if (orderForm) orderForm.reset();
         updatePickupTimeOptions('');
         state.myOrdersEmail = normalizeEmail(email);
+
         showToast(t('toastOrderSuccess'), `${t('toastOrderSuccessDesc')} <strong>${newOrder.id}</strong>`);
         navigateTo('my-orders');
     } catch (err) {
@@ -2211,21 +2357,25 @@ async function handlePlaceOrder(event) {
         resetCheckoutSubmitButton();
     }
 }
+
 function normalizeEmail(email) {
     return (email || '').trim().toLowerCase();
 }
+
 function handleOrdersEmailSubmit(event) {
     event.preventDefault();
     const input = document.getElementById('orders-email-input');
     state.myOrdersEmail = normalizeEmail(input ? input.value : '');
     renderMyOrders();
 }
+
 function clearOrdersEmail() {
     state.myOrdersEmail = '';
     const input = document.getElementById('orders-email-input');
     if (input) input.value = '';
     renderMyOrders();
 }
+
 function renderMyOrders() {
     const emptyV=document.getElementById('no-orders-view');
     const listC=document.getElementById('orders-list-view');
@@ -2233,6 +2383,7 @@ function renderMyOrders() {
     const emailActive=document.getElementById('orders-email-active');
     const emailCurrent=document.getElementById('orders-email-current');
     if(!emptyV||!listC||!emailV||!emailActive) return;
+
     if(!state.myOrdersEmail){
         emailV.classList.remove('hidden');
         emailActive.classList.add('hidden');
@@ -2242,10 +2393,12 @@ function renderMyOrders() {
         listC.innerHTML='';
         return;
     }
+
     emailV.classList.add('hidden');
     emailActive.classList.remove('hidden');
     emailActive.classList.add('flex');
     if(emailCurrent) emailCurrent.innerText = state.myOrdersEmail;
+
     const matchingOrders = state.orders.filter(ord => normalizeEmail(ord.customer && ord.customer.email) === state.myOrdersEmail);
     if(matchingOrders.length===0){ emptyV.classList.remove('hidden'); listC.classList.add('hidden'); listC.innerHTML=''; return; }
     emptyV.classList.add('hidden'); listC.classList.remove('hidden'); listC.innerHTML='';
@@ -2271,6 +2424,7 @@ function renderMyOrders() {
         listC.appendChild(card);
     });
 }
+
 function simulateOrderStatusChange(orderId) {
     const idx=state.orders.findIndex(o=>o.id===orderId); if(idx===-1) return;
     const curr=state.orders[idx].status;
@@ -2279,6 +2433,7 @@ function simulateOrderStatusChange(orderId) {
     renderMyOrders(); renderAdminOrdersLog();
     showToast(t('toastStatusChanged'),t('toastStatusChangedDesc'));
 }
+
 function showToast(title,msg,isError=false) {
     const toast=document.getElementById('custom-toast');
     const iconBox=document.getElementById('toast-icon-box');
@@ -2296,12 +2451,14 @@ function hideToast() {
     toast.classList.add('translate-y-10','opacity-0');
     setTimeout(()=>toast.classList.add('hidden'),300);
 }
+
 function toggleFaqWidget() {
     const panel=document.getElementById('faq-panel');
     const icon=document.getElementById('faq-trigger-icon');
     if(panel.classList.contains('hidden')){ panel.classList.remove('hidden'); setTimeout(()=>panel.classList.remove('translate-y-6','opacity-0'),10); icon.className='fa-solid fa-xmark text-2xl'; }
     else{ panel.classList.add('translate-y-6','opacity-0'); setTimeout(()=>panel.classList.add('hidden'),300); icon.className='fa-solid fa-circle-question text-2xl'; }
 }
+
 function renderFaqWidgetContent() {
     const c=document.getElementById('faq-content-area'); c.innerHTML='';
     const faqs=state.language==='he'?[
@@ -2319,6 +2476,7 @@ function renderFaqWidgetContent() {
     ];
     faqs.forEach(item=>{ const d=document.createElement('div'); d.className='border-b border-stone-100 pb-4 last:border-0 last:pb-0'; d.innerHTML=`<h4 class="font-bold text-stone-900 mb-1.5 flex items-start gap-1.5"><span class="text-amber-800">•</span><span>${item.q}</span></h4><p class="text-xs text-stone-500 ps-3.5 leading-relaxed">${item.a}</p>`; c.appendChild(d); });
 }
+
 // ================================================================
 // ADMIN (SHA-256 해시 인증 + 브루트포스 방지)
 // ================================================================
@@ -2326,6 +2484,7 @@ async function handleAdminLogin(e) {
     e.preventDefault();
     const now = Date.now();
     const banner = document.getElementById('admin-lockout-banner');
+
     // 잠금 상태 확인
     if (state.lockoutUntil > now) {
         const remaining = Math.ceil((state.lockoutUntil - now) / 1000);
@@ -2333,11 +2492,14 @@ async function handleAdminLogin(e) {
         banner.innerText = `Too many failed attempts. Try again in ${remaining} seconds.`;
         return;
     }
+
     const idInput = document.getElementById('admin-id').value;
     const pwInput = document.getElementById('admin-password').value;
+
     // SHA-256 해시 비교 (평문 비밀번호 코드에 없음)
     const [idHash, pwHash] = await Promise.all([sha256(idInput), sha256(pwInput)]);
     const isValid = ADMIN_CREDENTIALS.some(cred => cred.idHash === idHash && cred.pwHash === pwHash);
+
     if (isValid) {
         state.loginAttempts = 0; state.lockoutUntil = 0;
         banner.classList.add('hidden');
@@ -2361,15 +2523,18 @@ async function handleAdminLogin(e) {
         showToast('Authentication Failed','Invalid administrator credentials.', true);
     }
 }
+
 function handleAdminLogout() {
     state.isAdminAuthenticated=false; sessionStorage.removeItem('banchan_admin_auth'); renderAdminView();
 }
+
 function renderAdminView() {
     const gate=document.getElementById('admin-auth-gate');
     const dash=document.getElementById('admin-dashboard');
     if(state.isAdminAuthenticated){ gate.classList.add('hidden'); dash.classList.remove('hidden'); switchAdminTab(state.currentAdminTab); }
     else{ gate.classList.remove('hidden'); dash.classList.add('hidden'); }
 }
+
 function switchAdminTab(subtabId) {
     state.currentAdminTab=subtabId;
     document.querySelectorAll('.admin-tab-btn').forEach(b=>b.className='admin-tab-btn border-b-2 border-transparent text-stone-500 hover:text-stone-950 py-3 px-6 text-sm font-bold');
@@ -2381,6 +2546,7 @@ function switchAdminTab(subtabId) {
     else if(subtabId==='orders') renderAdminOrdersLog();
     else if(subtabId==='analytics') renderAdminAnalytics();
 }
+
 function renderAdminMenuList() {
     const c=document.getElementById('admin-menu-list'); if(!c) return; c.innerHTML='';
     state.menuItems.forEach(it=>{
@@ -2391,12 +2557,14 @@ function renderAdminMenuList() {
         c.appendChild(card);
     });
 }
+
 function handleImageUpload(el) {
     const file=el.files[0]; const hint=document.getElementById('upload-hint'); const fn=document.getElementById('upload-filename'); const preview=document.getElementById('menu-image-preview');
     if(!file){ state.temporaryUploadedImageBase64=''; fn.innerText=''; hint.innerText='Drag & drop or click to choose a picture'; preview.src=''; return; }
     fn.innerText=file.name; hint.innerText='File selected successfully!';
     const reader=new FileReader(); reader.onload=e=>{ state.temporaryUploadedImageBase64=e.target.result; preview.src=e.target.result; }; reader.readAsDataURL(file);
 }
+
 function openAddMenuModal() {
     const modal=document.getElementById('menu-item-modal'); if(!modal) return;
     document.getElementById('menu-modal-title').innerText='Add New Banchan Offering';
@@ -2407,6 +2575,7 @@ function openAddMenuModal() {
     document.getElementById('menu-file-input').value=''; document.getElementById('upload-hint').innerText='Drag & drop or click to choose a picture'; document.getElementById('upload-filename').innerText=''; document.getElementById('menu-image-preview').src=''; state.temporaryUploadedImageBase64='';
     modal.classList.remove('hidden'); modal.scrollIntoView({behavior:'smooth'});
 }
+
 function openEditMenuModal(id) {
     const modal=document.getElementById('menu-item-modal'); const it=state.menuItems.find(item=>item.id===id); if(!it||!modal) return;
     document.getElementById('menu-modal-title').innerText='Edit Banchan Offering'; document.getElementById('edit-item-id').value=it.id;
@@ -2419,7 +2588,9 @@ function openEditMenuModal(id) {
     document.getElementById('menu-file-input').value=''; document.getElementById('upload-hint').innerText='Replace current picture with a new file if needed'; document.getElementById('upload-filename').innerText='Using current saved image'; document.getElementById('menu-image-preview').src=it.image; state.temporaryUploadedImageBase64=it.image;
     modal.classList.remove('hidden'); modal.scrollIntoView({behavior:'smooth'});
 }
+
 function closeAddMenuModal() { document.getElementById('menu-item-modal').classList.add('hidden'); }
+
 function handleSaveMenuItem(e) {
     e.preventDefault();
     const editId=document.getElementById('edit-item-id').value;
@@ -2433,13 +2604,17 @@ function handleSaveMenuItem(e) {
     closeAddMenuModal(); renderAdminMenuList(); renderMenu();
     showToast('Catalog Sync Successful','Menu updates written and loaded successfully.');
 }
+
 function deleteMenuItem(id) {
     if(confirm('Are you sure you want to delete this menu item?')){ state.menuItems=state.menuItems.filter(it=>it.id!==id); saveMenuItems(); renderAdminMenuList(); renderMenu(); showToast('Offering Removed','The item was deleted from catalog offerings.'); }
 }
+
 // ================================================================
 // PICKUP SPOTS 관리 (추가 / 수정 / 삭제)
 // ================================================================
+
 const DAYS_OF_WEEK = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
 function openAddSpotModal() {
     document.getElementById('spot-modal-title').innerText = 'Add New Pickup Spot';
     document.getElementById('edit-spot-id').value = '';
@@ -2452,6 +2627,7 @@ function openAddSpotModal() {
     document.getElementById('spot-item-modal').classList.remove('hidden');
     document.getElementById('spot-item-modal').scrollIntoView({ behavior: 'smooth' });
 }
+
 function openEditSpotModal(spotId) {
     const spot = state.pickupSpots.find(s => s.id === spotId);
     if (!spot) return;
@@ -2476,6 +2652,7 @@ function openEditSpotModal(spotId) {
     document.getElementById('spot-item-modal').classList.remove('hidden');
     document.getElementById('spot-item-modal').scrollIntoView({ behavior: 'smooth' });
 }
+
 function renderSpotDayCheckboxes(selectedDays) {
     const c = document.getElementById('spot-days-checkboxes');
     if (!c) return;
@@ -2487,6 +2664,7 @@ function renderSpotDayCheckboxes(selectedDays) {
         </label>`;
     }).join('');
 }
+
 function toggleDayLabel(cb, day) {
     const label = document.getElementById('day-label-' + day);
     if (!label) return;
@@ -2496,9 +2674,11 @@ function toggleDayLabel(cb, day) {
         label.className = label.className.replace('bg-amber-800 text-white border-amber-800','bg-white text-stone-600 border-stone-300 hover:border-amber-800');
     }
 }
+
 function closeSpotModal() {
     document.getElementById('spot-item-modal').classList.add('hidden');
 }
+
 function handleSaveSpot() {
     const editId = document.getElementById('edit-spot-id').value;
     const rawId = document.getElementById('spot-id-input').value.trim().replace(/\s+/g,'-').toLowerCase();
@@ -2509,6 +2689,7 @@ function handleSaveSpot() {
     const selectedDays = Array.from(document.querySelectorAll('.spot-day-cb:checked')).map(cb => cb.value);
     const slotsRaw = document.getElementById('spot-slots-modal').value;
     const times = slotsRaw.split(',').map(s => s.trim()).filter(Boolean);
+
     const newSpot = {
         id: editId || rawId,
         days: selectedDays,
@@ -2530,6 +2711,7 @@ function handleSaveSpot() {
             }
         }
     };
+
     if (editId) {
         const idx = state.pickupSpots.findIndex(s => s.id === editId);
         if (idx !== -1) state.pickupSpots[idx] = newSpot;
@@ -2541,6 +2723,7 @@ function handleSaveSpot() {
         }
         state.pickupSpots.push(newSpot);
     }
+
     localStorage.setItem(SPOTS_STORAGE_KEY, JSON.stringify(state.pickupSpots));
     if (isCloudSyncEnabled()) cloudPushSpots().catch(e => console.error('Cloud spots save', e));
     populateLocationSelect();
@@ -2549,6 +2732,7 @@ function handleSaveSpot() {
     closeSpotModal();
     showToast('Spot Saved', `"${nameEn}" has been saved successfully.`);
 }
+
 function deleteSpot(spotId) {
     const spot = state.pickupSpots.find(s => s.id === spotId);
     if (!spot) return;
@@ -2561,16 +2745,19 @@ function deleteSpot(spotId) {
     renderAdminSpotsList();
     showToast('Spot Deleted', `"${spot.translations.en.name}" removed.`);
 }
+
 function renderAdminSpotsList() {
     const c = document.getElementById('admin-spots-list');
     const emptyEl = document.getElementById('admin-spots-empty');
     if (!c) return;
     c.innerHTML = '';
+
     if (state.pickupSpots.length === 0) {
         if (emptyEl) emptyEl.classList.remove('hidden');
         return;
     }
     if (emptyEl) emptyEl.classList.add('hidden');
+
     state.pickupSpots.forEach(spot => {
         const enT = spot.translations.en || {};
         const heT = spot.translations.he || {};
@@ -2580,6 +2767,7 @@ function renderAdminSpotsList() {
         const slotsHtml = (spot.times || []).length > 0
             ? spot.times.map(t => `<span class="px-2 py-0.5 bg-stone-100 text-stone-700 text-[10px] font-mono font-bold rounded-lg">${t}</span>`).join('')
             : '<span class="text-[10px] text-stone-400">No time slots set</span>';
+
         const card = document.createElement('div');
         card.className = 'bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow';
         card.innerHTML = `
@@ -2633,6 +2821,7 @@ function renderAdminSpotsList() {
         c.appendChild(card);
     });
 }
+
 function buildAdminOrderCard(ord, isCompleted) {
     let badge = '';
     if (ord.status === 'cooking') badge = '<span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-1 rounded-lg">Cooking</span>';
@@ -2652,6 +2841,7 @@ function buildAdminOrderCard(ord, isCompleted) {
     div.innerHTML = '<div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-stone-100 pb-2"><div><span class="font-black text-stone-900 text-sm">' + ord.id + '</span><span class="text-stone-400 text-[10px] ml-1">· ' + ord.timestamp + '</span></div><div class="flex flex-wrap items-center gap-2">' + badge + actions + '</div></div><div class="grid grid-cols-1 md:grid-cols-4 gap-2 text-stone-600"><div><strong>Customer:</strong> ' + ord.customer.name + '</div><div><strong>Spot:</strong> ' + ord.pickup.locationNameEN + ' (' + ord.pickup.time + ')</div><div><strong>Payment:</strong> ' + (ord.paymentMethod||'cash') + '</div><div><strong>Total:</strong> ₪' + ord.total + '</div></div><div class="bg-stone-50 p-2.5 rounded-lg text-[11px]"><strong>Dishes:</strong> ' + items + (ord.customer.disposableUtensils?' [Disposable Utensils]':'') + '</div>';
     return div;
 }
+
 function renderAdminOrdersLog() {
     var activeEl = document.getElementById('admin-orders-active');
     var completedEl = document.getElementById('admin-orders-completed');
@@ -2679,6 +2869,7 @@ function renderAdminOrdersLog() {
         completed.forEach(function(ord) { completedEl.appendChild(buildAdminOrderCard(ord, true)); });
     }
 }
+
 function markPickupComplete(id) {
     var idx = state.orders.findIndex(function(o) { return o.id === id; });
     if (idx === -1) return;
@@ -2689,6 +2880,7 @@ function markPickupComplete(id) {
     renderMyOrders();
     showToast('Pickup Complete', 'Order ' + id + ' moved to pickup completed.');
 }
+
 function reopenAdminOrder(id) {
     var idx = state.orders.findIndex(function(o) { return o.id === id; });
     if (idx === -1) return;
@@ -2699,6 +2891,7 @@ function reopenAdminOrder(id) {
     renderMyOrders();
     showToast('Order Reopened', 'Order ' + id + ' is active again.');
 }
+
 function updateAdminOrderStatus(id, newStatus) {
     var idx = state.orders.findIndex(function(o) { return o.id === id; });
     if (idx === -1) return;
@@ -2712,16 +2905,20 @@ function updateAdminOrderStatus(id, newStatus) {
     renderMyOrders();
     showToast('Status Updated', 'Order ' + id + ' status changed to ' + newStatus + '.');
 }
+
 function clearSimulatedOrders() {
     if(confirm('Clear all orders? This resets the customer dashboard.')){ state.orders=[]; localStorage.removeItem(ORDERS_STORAGE_KEY); saveOrders(); renderAdminOrdersLog(); renderMyOrders(); if(state.currentAdminTab==='analytics') renderAdminAnalytics(); showToast('Log Cleared','All orders wiped.'); }
 }
+
 // ================================================================
 // ADMIN ANALYTICS
 // ================================================================
 let analyticsCharts = {};
 let analyticsPeriodDays = 30;
+
 const ANALYTICS_COLORS = ['#2563eb','#0891b2','#7c3aed','#059669','#ea580c','#6366f1','#14b8a6','#64748b'];
 const ANALYTICS_KPI_ACCENTS = ['#2563eb','#0891b2','#7c3aed','#059669'];
+
 function setAnalyticsPeriod(days) {
     analyticsPeriodDays = days;
     document.querySelectorAll('.analytics-period-btn').forEach(btn => {
@@ -2733,10 +2930,12 @@ function setAnalyticsPeriod(days) {
     });
     renderAdminAnalytics();
 }
+
 function destroyAnalyticsCharts() {
     Object.values(analyticsCharts).forEach(ch => { try { ch.destroy(); } catch(e) {} });
     analyticsCharts = {};
 }
+
 function getOrderDate(ord) {
     if (ord.createdAt) {
         const d = new Date(ord.createdAt);
@@ -2750,6 +2949,7 @@ function getOrderDate(ord) {
     if (!isNaN(parsed)) return new Date(parsed);
     return new Date();
 }
+
 function filterOrdersForAnalytics(orders) {
     if (!analyticsPeriodDays) return orders;
     const cutoff = new Date();
@@ -2757,6 +2957,7 @@ function filterOrdersForAnalytics(orders) {
     cutoff.setHours(0, 0, 0, 0);
     return orders.filter(o => getOrderDate(o) >= cutoff);
 }
+
 function computeAnalytics(orders) {
     const menuStats = {};
     const locationStats = {};
@@ -2764,6 +2965,7 @@ function computeAnalytics(orders) {
     const daily = {};
     const paymentStats = {};
     let totalRevenue = 0, totalUnits = 0;
+
     orders.forEach(ord => {
         const rev = ord.total || 0;
         totalRevenue += rev;
@@ -2771,13 +2973,16 @@ function computeAnalytics(orders) {
         if (!daily[dateKey]) daily[dateKey] = { revenue: 0, orders: 0 };
         daily[dateKey].revenue += rev;
         daily[dateKey].orders += 1;
+
         const locKey = ord.pickup?.locationKey || 'unknown';
         const locName = ord.pickup?.locationNameEN || 'Unknown';
         if (!locationStats[locKey]) locationStats[locKey] = { name: locName, revenue: 0, orders: 0 };
         locationStats[locKey].revenue += rev;
         locationStats[locKey].orders += 1;
+
         const pay = ord.paymentMethod || 'cash';
         paymentStats[pay] = (paymentStats[pay] || 0) + 1;
+
         (ord.cart || []).forEach(it => {
             const id = it.product?.id || it.product?.translations?.en?.name || 'unknown';
             const name = it.product?.translations?.en?.name || 'Unknown';
@@ -2787,22 +2992,26 @@ function computeAnalytics(orders) {
             if (!menuStats[id]) menuStats[id] = { id, name, qty: 0, revenue: 0 };
             menuStats[id].qty += qty;
             menuStats[id].revenue += lineRev;
+
             const mlKey = id + '|' + locKey;
             if (!menuLocation[mlKey]) menuLocation[mlKey] = { menuId: id, menuName: name, locKey, locName, qty: 0, revenue: 0 };
             menuLocation[mlKey].qty += qty;
             menuLocation[mlKey].revenue += lineRev;
         });
     });
+
     const sortedDays = Object.keys(daily).sort();
     const topMenus = Object.values(menuStats).sort((a, b) => b.revenue - a.revenue);
     const topLocations = Object.values(locationStats).sort((a, b) => b.revenue - a.revenue);
     const combos = Object.values(menuLocation).sort((a, b) => b.qty - a.qty).slice(0, 12);
+
     return {
         totalRevenue, totalUnits, orderCount: orders.length,
         avgOrder: orders.length ? totalRevenue / orders.length : 0,
         sortedDays, daily, topMenus, topLocations, menuLocation, combos, paymentStats
     };
 }
+
 function fillDateGaps(sortedDays, daily, periodDays) {
     if (!periodDays) {
         return {
@@ -2825,6 +3034,7 @@ function fillDateGaps(sortedDays, daily, periodDays) {
     }
     return { labels, revenues, orders: orderCounts };
 }
+
 function renderAnalyticsKpis(data) {
     const el = document.getElementById('analytics-kpis');
     if (!el) return;
@@ -2840,6 +3050,7 @@ function renderAnalyticsKpis(data) {
             <p class="text-2xl font-black text-slate-900">${c.value}</p>
         </div>`).join('');
 }
+
 function renderAnalyticsMatrix(menuLocation, topMenus, locations) {
     const wrap = document.getElementById('analytics-matrix-wrap');
     if (!wrap) return;
@@ -2854,6 +3065,7 @@ function renderAnalyticsMatrix(menuLocation, topMenus, locations) {
         const q = (menuLocation[m.id + '|' + l.locKey] || { qty: 0 }).qty;
         if (q > maxQty) maxQty = q;
     }));
+
     let html = '<table class="w-full text-[10px] border-collapse min-w-[480px]"><thead><tr><th class="text-start p-2 font-bold text-stone-500 border-b border-stone-200">Menu ↓ / Spot →</th>';
     locs.forEach(l => { html += `<th class="p-2 font-bold text-stone-700 border-b border-stone-200 text-center max-w-[90px] truncate" title="${l.name}">${l.name.split(' ')[0]}</th>`; });
     html += '</tr></thead><tbody>';
@@ -2870,6 +3082,7 @@ function renderAnalyticsMatrix(menuLocation, topMenus, locations) {
     html += '</tbody></table>';
     wrap.innerHTML = html;
 }
+
 function renderAnalyticsCombos(combos) {
     const el = document.getElementById('analytics-top-combos');
     if (!el) return;
@@ -2886,17 +3099,20 @@ function renderAnalyticsCombos(combos) {
             <div class="text-end shrink-0 ps-2"><span class="font-black text-blue-700">${c.qty}</span> <span class="text-slate-400">units</span></div>
         </div>`).join('');
 }
+
 function makeChart(id, config) {
     const canvas = document.getElementById(id);
     if (!canvas || typeof Chart === 'undefined') return;
     if (analyticsCharts[id]) analyticsCharts[id].destroy();
     analyticsCharts[id] = new Chart(canvas, config);
 }
+
 function renderAdminAnalytics() {
     destroyAnalyticsCharts();
     const emptyEl = document.getElementById('analytics-empty');
     const contentEl = document.getElementById('analytics-content');
     const filtered = filterOrdersForAnalytics(state.orders);
+
     if (filtered.length === 0) {
         if (emptyEl) emptyEl.classList.remove('hidden');
         if (contentEl) contentEl.classList.add('hidden');
@@ -2904,10 +3120,13 @@ function renderAdminAnalytics() {
     }
     if (emptyEl) emptyEl.classList.add('hidden');
     if (contentEl) contentEl.classList.remove('hidden');
+
     const data = computeAnalytics(filtered);
     renderAnalyticsKpis(data);
+
     const trend = fillDateGaps(data.sortedDays, data.daily, analyticsPeriodDays);
     const chartDefaults = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+
     makeChart('chart-revenue-trend', {
         type: 'line',
         data: {
@@ -2925,6 +3144,7 @@ function renderAdminAnalytics() {
         },
         options: { ...chartDefaults, scales: { y: { beginAtZero: true, ticks: { callback: v => '₪' + v } } } }
     });
+
     makeChart('chart-orders-trend', {
         type: 'bar',
         data: {
@@ -2938,6 +3158,7 @@ function renderAdminAnalytics() {
         },
         options: { ...chartDefaults, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
     });
+
     const metric = document.getElementById('analytics-menu-metric')?.value || 'revenue';
     const menuSorted = [...data.topMenus].sort((a, b) => metric === 'qty' ? b.qty - a.qty : b.revenue - a.revenue).slice(0, 8);
     makeChart('chart-top-menu', {
@@ -2953,6 +3174,7 @@ function renderAdminAnalytics() {
         },
         options: { ...chartDefaults, indexAxis: 'y', scales: { x: { beginAtZero: true } } }
     });
+
     const locSorted = data.topLocations.slice(0, 6);
     makeChart('chart-locations', {
         type: 'doughnut',
@@ -2974,6 +3196,7 @@ function renderAdminAnalytics() {
             }
         }
     });
+
     const payLabels = { cash: 'Cash', bit_prepaid: 'Bit Prepaid', bit_pickup: 'Bit on Pickup', card: 'Card' };
     const payKeys = Object.keys(data.paymentStats);
     makeChart('chart-payment', {
@@ -2988,6 +3211,7 @@ function renderAdminAnalytics() {
             plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
         }
     });
+
     const locKeysFromStats = Object.entries(
         filtered.reduce((acc, ord) => {
             const k = ord.pickup?.locationKey || 'unknown';
@@ -2996,9 +3220,13 @@ function renderAdminAnalytics() {
             return acc;
         }, {})
     ).map(([k, v]) => ({ locKey: k, name: v.name, revenue: v.revenue })).sort((a, b) => b.revenue - a.revenue);
+
     renderAnalyticsMatrix(data.menuLocation, data.topMenus, locKeysFromStats);
     renderAnalyticsCombos(data.combos);
 }
 </script>
 </body>
 </html>
+
+
+
