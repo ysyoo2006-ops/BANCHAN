@@ -229,7 +229,7 @@
         /* ── Menu grid ── */
         #menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 28px;
         }
 
@@ -338,6 +338,47 @@
             margin-top: auto;
             padding-top: 14px;
             border-top: 1px solid var(--border-warm);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .card-footer-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        .card-footer-controls .btn-basket {
+            flex: 1;
+            width: auto;
+        }
+        .qty-stepper {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-warm);
+            background: var(--ivory);
+            border-radius: 2px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .qty-stepper button {
+            padding: 8px 10px;
+            color: var(--ink-soft);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+            line-height: 1;
+        }
+        .qty-stepper button:hover { background: var(--ivory-deep); }
+        .qty-stepper span {
+            padding: 0 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--ink);
+            min-width: 28px;
+            text-align: center;
+            font-family: 'Cormorant Garamond', serif;
         }
         .btn-basket {
             width: 100%;
@@ -1904,13 +1945,15 @@ function renderMenu() {
                     </div>
                     <div class="flex flex-wrap gap-1.5 mt-2 mb-3">${stockHint}</div>
                 </div>
-                <div class="card-footer flex items-center justify-between gap-3">
-                    <div class="flex items-center border border-[var(--border-warm)] bg-[var(--ivory)] rounded overflow-hidden${outOfStock?' opacity-40 pointer-events-none':''}">
-                        <button onclick="adjustLocalQty('${it.id}',-1)" class="px-2.5 py-1.5 text-[var(--ink-soft)] hover:bg-[var(--ivory-deep)] transition-colors"><i class="fa-solid fa-minus text-[10px]"></i></button>
-                        <span id="qty-holder-${it.id}" class="px-2 text-sm font-bold text-[var(--ink)] w-8 text-center" style="font-family:'Cormorant Garamond', serif;">${menuQtyHolders[it.id]}</span>
-                        <button onclick="adjustLocalQty('${it.id}',1)" class="px-2.5 py-1.5 text-[var(--ink-soft)] hover:bg-[var(--ivory-deep)] transition-colors"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                <div class="card-footer">
+                    <div class="card-footer-controls">
+                        <div class="qty-stepper${outOfStock?' opacity-40 pointer-events-none':''}">
+                            <button onclick="adjustLocalQty('${it.id}',-1)"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                            <span id="qty-holder-${it.id}">${menuQtyHolders[it.id]}</span>
+                            <button onclick="adjustLocalQty('${it.id}',1)"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                        </div>
+                        ${addBtn}
                     </div>
-                    ${addBtn}
                 </div>
             </div>`;
         grid.appendChild(card);
